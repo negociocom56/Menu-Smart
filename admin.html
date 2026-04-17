@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,8 +8,9 @@
     <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/3075/3075977.png" type="image/png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="style.css">
-    <script>if(sessionStorage.getItem('bocado_auth')!=='true') window.location.href='login.html';</script>
+    <script>if (sessionStorage.getItem('bocado_auth') !== 'true') window.location.href = 'login.html';</script>
 </head>
+
 <body>
 
     <header class="app-header">
@@ -21,8 +23,12 @@
                 </div>
             </div>
             <div style="display:flex;gap:8px;">
-                <a href="index.html" style="padding:10px 16px;background:var(--bg-muted);border-radius:10px;color:var(--text-secondary);text-decoration:none;font-size:0.85rem;font-weight:600;"><i class="fas fa-store"></i> Ver Tienda</a>
-                <button onclick="sessionStorage.clear();location.href='login.html'" style="padding:10px 16px;background:#fde8e8;border:none;border-radius:10px;color:#e74c3c;font-weight:600;cursor:pointer;font-size:0.85rem;"><i class="fas fa-sign-out-alt"></i></button>
+                <a href="index.html"
+                    style="padding:10px 16px;background:var(--bg-muted);border-radius:10px;color:var(--text-secondary);text-decoration:none;font-size:0.85rem;font-weight:600;"><i
+                        class="fas fa-store"></i> Ver Tienda</a>
+                <button onclick="sessionStorage.clear();location.href='login.html'"
+                    style="padding:10px 16px;background:#fde8e8;border:none;border-radius:10px;color:#e74c3c;font-weight:600;cursor:pointer;font-size:0.85rem;"><i
+                        class="fas fa-sign-out-alt"></i></button>
             </div>
         </div>
     </header>
@@ -30,28 +36,32 @@
     <main class="container" style="padding-top:20px;padding-bottom:60px;">
 
         <!-- ===== HELP SECTION: IMAGES ===== -->
-        <section class="admin-form-card" style="background: var(--brand-bg); border-style: dashed; border-color: var(--brand);">
+        <section class="admin-form-card"
+            style="background: var(--brand-bg); border-style: dashed; border-color: var(--brand);">
             <h3 style="margin-bottom: 12px; color: var(--brand);">
                 <i class="fas fa-info-circle"></i> Instrucciones para fotos
             </h3>
             <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 12px;">
                 Para que tus fotos se vean perfectas en el menú, te recomendamos usar <strong>ImgBB</strong>:
             </p>
-            <ol style="font-size: 0.8rem; color: var(--text-secondary); margin-left: 18px; margin-bottom: 16px; line-height: 1.5;">
+            <ol
+                style="font-size: 0.8rem; color: var(--text-secondary); margin-left: 18px; margin-bottom: 16px; line-height: 1.5;">
                 <li>Entra a <strong>ImgBB</strong> (botón abajo).</li>
                 <li>Inicia sesión con tu cuenta de Google.</li>
                 <li>Sube la foto de tu producto.</li>
                 <li>En el menú desplegable, elige <strong>"Enlaces directos"</strong>.</li>
                 <li>Copia ese enlace (termina en .jpg o .png) y pégalo abajo.</li>
             </ol>
-            <a href="https://imgbb.com/" target="_blank" class="btn-save" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; width: auto; padding: 10px 20px;">
+            <a href="https://imgbb.com/" target="_blank" class="btn-save"
+                style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; width: auto; padding: 10px 20px;">
                 <i class="fas fa-external-link-alt"></i> IR A IMGBB
             </a>
         </section>
 
         <!-- ===== BANNERS SECTION ===== -->
         <section>
-            <h3 style="font-size:1rem;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px;"><i class="fas fa-images" style="color:var(--brand);"></i> Carrusel de Promociones</h3>
+            <h3 style="font-size:1rem;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px;"><i
+                    class="fas fa-images" style="color:var(--brand);"></i> Carrusel de Promociones</h3>
 
             <div class="admin-form-card">
                 <h3 id="banner-form-title"><i class="fas fa-plus-circle"></i> Nueva Promoción</h3>
@@ -83,7 +93,8 @@
 
         <!-- ===== PRODUCTS SECTION ===== -->
         <section>
-            <h3 style="font-size:1rem;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px;"><i class="fas fa-utensils" style="color:var(--brand);"></i> Productos del Menú</h3>
+            <h3 style="font-size:1rem;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px;"><i
+                    class="fas fa-utensils" style="color:var(--brand);"></i> Productos del Menú</h3>
 
             <div class="admin-form-card">
                 <h3 id="product-form-title"><i class="fas fa-plus-circle"></i> Agregar Producto</h3>
@@ -127,178 +138,10 @@
 
     <div id="toast" class="toast"><i class="fas fa-check-circle"></i> <span id="toast-msg"></span></div>
 
-    <script>
-        // --- State ---
-        let products = JSON.parse(localStorage.getItem('bocado_products')) || [];
-        let banners  = JSON.parse(localStorage.getItem('bocado_banners'))  || [];
-
-        // --- Render Products ---
-        function renderProducts() {
-            const el = document.getElementById('product-list');
-            if (products.length === 0) {
-                el.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:30px;">Sin productos aún.</p>';
-                return;
-            }
-            el.innerHTML = products.map(p => `
-                <div class="admin-product-row">
-                    <img src="${p.img}" alt="" onerror="this.src='https://placehold.co/50x50/f3eeea/a89e96?text=?'">
-                    <div class="info">
-                        <h4>${p.name}</h4>
-                        <div class="meta-text">${p.category} · ${p.desc?.substring(0,35) || ''}...</div>
-                    </div>
-                    <span class="price-tag">$${p.price.toLocaleString('es-AR')}</span>
-                    <div class="actions">
-                        <button class="btn-edit" onclick="editProduct(${p.id})" title="Editar"><i class="fas fa-pen"></i></button>
-                        <button class="btn-del" onclick="deleteProduct(${p.id})" title="Eliminar"><i class="fas fa-trash"></i></button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        // --- Render Banners ---
-        function renderBanners() {
-            const el = document.getElementById('banner-list');
-            if (banners.length === 0) {
-                el.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:20px;">Sin promociones.</p>';
-                return;
-            }
-            el.innerHTML = banners.map(b => `
-                <div class="banner-item">
-                    <div style="width:40px;height:40px;border-radius:8px;background:${b.color};flex-shrink:0;"></div>
-                    <div class="banner-text">
-                        <h4>${b.title}</h4>
-                        <p>${b.subtitle || ''}</p>
-                    </div>
-                    <div style="display:flex;gap:6px;">
-                        <button onclick="editBanner(${b.id})" style="background:var(--bg-muted);border:none;width:32px;height:32px;border-radius:8px;cursor:pointer;color:var(--text-muted);"><i class="fas fa-pen"></i></button>
-                        <button onclick="deleteBanner(${b.id})" style="background:#fde8e8;border:none;width:32px;height:32px;border-radius:8px;cursor:pointer;color:#e74c3c;"><i class="fas fa-trash"></i></button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        // --- Product CRUD ---
-        function parseImageUrl(url) {
-            if (!url) return 'https://placehold.co/600x400/f3eeea/a89e96?text=Producto';
-            // Convert Google Drive sharing link to direct image URL
-            if (url.includes('drive.google.com/file/d/')) {
-                const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
-                if (match && match[1]) return `https://drive.google.com/uc?export=view&id=${match[1]}`;
-            } else if (url.includes('drive.google.com/open?id=')) {
-                const match = url.match(/id=([a-zA-Z0-9_-]+)/);
-                if (match && match[1]) return `https://drive.google.com/uc?export=view&id=${match[1]}`;
-            }
-            return url;
-        }
-
-        document.getElementById('product-form').onsubmit = (e) => {
-            e.preventDefault();
-            const editId = document.getElementById('p-edit-id').value;
-            const prod = {
-                id: editId ? parseInt(editId) : Date.now(),
-                name: document.getElementById('p-name').value,
-                price: parseFloat(document.getElementById('p-price').value),
-                category: document.getElementById('p-category').value,
-                img: parseImageUrl(document.getElementById('p-img').value),
-                desc: document.getElementById('p-desc').value
-            };
-            if (editId) {
-                products = products.map(p => p.id === parseInt(editId) ? prod : p);
-                toast('Producto actualizado ✓');
-            } else {
-                products.push(prod);
-                toast('Producto creado ✓');
-            }
-            save(); resetProductForm(); renderProducts();
-        };
-
-        window.editProduct = (id) => {
-            const p = products.find(x => x.id === id);
-            document.getElementById('p-edit-id').value = p.id;
-            document.getElementById('p-name').value = p.name;
-            document.getElementById('p-price').value = p.price;
-            document.getElementById('p-category').value = p.category;
-            document.getElementById('p-img').value = p.img;
-            document.getElementById('p-desc').value = p.desc;
-            document.getElementById('product-form-title').innerHTML = '<i class="fas fa-edit"></i> Editando: ' + p.name;
-            document.getElementById('p-cancel').style.display = 'block';
-            window.scrollTo({top: document.getElementById('product-form').offsetTop - 100, behavior: 'smooth'});
-        };
-
-        window.deleteProduct = (id) => {
-            if (!confirm('¿Eliminar este producto?')) return;
-            products = products.filter(p => p.id !== id);
-            save(); renderProducts(); toast('Eliminado ✓');
-        };
-
-        function resetProductForm() {
-            document.getElementById('p-edit-id').value = '';
-            document.getElementById('product-form').reset();
-            document.getElementById('product-form-title').innerHTML = '<i class="fas fa-plus-circle"></i> Agregar Producto';
-            document.getElementById('p-cancel').style.display = 'none';
-        }
-        document.getElementById('p-cancel').onclick = resetProductForm;
-
-        // --- Banner CRUD ---
-        document.getElementById('banner-form').onsubmit = (e) => {
-            e.preventDefault();
-            const editId = document.getElementById('b-edit-id').value;
-            const banner = {
-                id: editId ? parseInt(editId) : Date.now(),
-                title: document.getElementById('b-title').value,
-                subtitle: document.getElementById('b-subtitle').value,
-                color: document.getElementById('b-color').value,
-            };
-            if (editId) {
-                banners = banners.map(b => b.id === parseInt(editId) ? banner : b);
-                toast('Promo actualizada ✓');
-            } else {
-                banners.push(banner);
-                toast('Promo creada ✓');
-            }
-            saveBanners(); resetBannerForm(); renderBanners();
-        };
-
-        window.editBanner = (id) => {
-            const b = banners.find(x => x.id === id);
-            document.getElementById('b-edit-id').value = b.id;
-            document.getElementById('b-title').value = b.title;
-            document.getElementById('b-subtitle').value = b.subtitle;
-            document.getElementById('b-color').value = b.color;
-            document.getElementById('banner-form-title').innerHTML = '<i class="fas fa-edit"></i> Editando promo';
-            document.getElementById('b-cancel').style.display = 'block';
-            window.scrollTo({top: 0, behavior: 'smooth'});
-        };
-
-        window.deleteBanner = (id) => {
-            if (!confirm('¿Eliminar esta promo?')) return;
-            banners = banners.filter(b => b.id !== id);
-            saveBanners(); renderBanners(); toast('Eliminada ✓');
-        };
-
-        function resetBannerForm() {
-            document.getElementById('b-edit-id').value = '';
-            document.getElementById('banner-form').reset();
-            document.getElementById('b-color').value = '#1a1311';
-            document.getElementById('banner-form-title').innerHTML = '<i class="fas fa-plus-circle"></i> Nueva Promoción';
-            document.getElementById('b-cancel').style.display = 'none';
-        }
-        document.getElementById('b-cancel').onclick = resetBannerForm;
-
-        // --- Persistence ---
-        function save() { localStorage.setItem('bocado_products', JSON.stringify(products)); }
-        function saveBanners() { localStorage.setItem('bocado_banners', JSON.stringify(banners)); }
-
-        // --- Toast ---
-        function toast(msg) {
-            document.getElementById('toast-msg').innerText = msg;
-            document.getElementById('toast').classList.add('show');
-            setTimeout(() => document.getElementById('toast').classList.remove('show'), 2200);
-        }
-
-        // --- Init ---
-        renderProducts();
-        renderBanners();
     </script>
 </body>
+
+</html>
+</body>
+
 </html>

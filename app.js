@@ -4,21 +4,21 @@
 
 // ---- 1. SEED DATA: Products ----
 const SEED_PRODUCTS = [
-    { id: 1,  name: 'Empanada de Carne',         price: 1450, category: 'Empanadas',  img: 'https://images.unsplash.com/photo-1601924287811-e34de5d17476?w=600&h=400&fit=crop', desc: 'Carne cortada a cuchillo, jugosa y especiada.' },
-    { id: 2,  name: 'Empanada de Pollo',          price: 1450, category: 'Empanadas',  img: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=600&h=400&fit=crop', desc: 'Pollo desmenuzado con cebolla de verdeo.' },
-    { id: 3,  name: 'Empanada de Humita',         price: 1450, category: 'Empanadas',  img: 'https://images.unsplash.com/photo-1609525313344-a56b96f0efc8?w=600&h=400&fit=crop', desc: 'Choclo cremoso y queso, la favorita del NOA.' },
-    { id: 4,  name: 'Empanada de Jamón y Queso',  price: 1450, category: 'Empanadas',  img: 'https://images.unsplash.com/photo-1619221882220-947b3d3c8861?w=600&h=400&fit=crop', desc: 'Jamón cocido con mozzarella derretida.' },
-    { id: 5,  name: 'Empanada Árabe (Sfiha)',     price: 1600, category: 'Empanadas',  img: 'https://images.unsplash.com/photo-1562059390-a761a084768e?w=600&h=400&fit=crop', desc: 'Carne especiada con limón, receta libanesa.' },
-    { id: 6,  name: 'Empanada de Verdura',        price: 1350, category: 'Empanadas',  img: 'https://images.unsplash.com/photo-1645696996945-3254a0d35920?w=600&h=400&fit=crop', desc: 'Espinaca, cebolla y huevo duro.' },
-    { id: 7,  name: 'Pizza Muzzarella',           price: 7500, category: 'Pizzas',     img: 'https://images.unsplash.com/photo-1574071318508-1cdbad80ad38?w=600&h=400&fit=crop', desc: 'Doble muzzarella con aceitunas verdes.' },
-    { id: 8,  name: 'Pizza Napolitana',           price: 8500, category: 'Pizzas',     img: 'https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?w=600&h=400&fit=crop', desc: 'Rodajas de tomate, ajo y albahaca fresca.' },
-    { id: 9,  name: 'Pizza Fugazzeta',            price: 8000, category: 'Pizzas',     img: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=600&h=400&fit=crop', desc: 'Cebolla caramelizada abundante con muzzarella.' },
-    { id: 10, name: 'Pizza Calabresa',            price: 8500, category: 'Pizzas',     img: 'https://images.unsplash.com/photo-1534308983496-4fabb1a015ee?w=600&h=400&fit=crop', desc: 'Longaniza calabresa picante con morrones.' },
-    { id: 11, name: 'Coca-Cola 1.5L',             price: 2500, category: 'Bebidas',    img: 'https://images.unsplash.com/photo-1629203851122-3726ecdf080e?w=600&h=400&fit=crop', desc: 'La clásica, bien helada.' },
-    { id: 12, name: 'Sprite 1.5L',                price: 2500, category: 'Bebidas',    img: 'https://images.unsplash.com/photo-1625772299848-391b6a87d7b3?w=600&h=400&fit=crop', desc: 'Lima-limón refrescante.' },
-    { id: 13, name: 'Agua Mineral 500ml',         price: 1200, category: 'Bebidas',    img: 'https://images.unsplash.com/photo-1564419320461-6eb9039cfa3e?w=600&h=400&fit=crop', desc: 'Sin gas, ideal para acompañar.' },
-    { id: 14, name: 'Cerveza Quilmes 1L',         price: 3500, category: 'Bebidas',    img: 'https://images.unsplash.com/photo-1535958636474-b021ee887b13?w=600&h=400&fit=crop', desc: 'Retornable, bien fría.' },
-    { id: 15, name: 'Fainá',                      price: 3500, category: 'Pizzas',     img: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=600&h=400&fit=crop', desc: 'Harina de garbanzo crocante, el clásico acompañante.' },
+    { id: 1, name: 'Empanada de Carne', price: 1450, category: 'Empanadas', img: 'https://images.unsplash.com/photo-1601924287811-e34de5d17476?w=600&h=400&fit=crop', desc: 'Carne cortada a cuchillo, jugosa y especiada.' },
+    { id: 2, name: 'Empanada de Pollo', price: 1450, category: 'Empanadas', img: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=600&h=400&fit=crop', desc: 'Pollo desmenuzado con cebolla de verdeo.' },
+    { id: 3, name: 'Empanada de Humita', price: 1450, category: 'Empanadas', img: 'https://images.unsplash.com/photo-1609525313344-a56b96f0efc8?w=600&h=400&fit=crop', desc: 'Choclo cremoso y queso, la favorita del NOA.' },
+    { id: 4, name: 'Empanada de Jamón y Queso', price: 1450, category: 'Empanadas', img: 'https://images.unsplash.com/photo-1619221882220-947b3d3c8861?w=600&h=400&fit=crop', desc: 'Jamón cocido con mozzarella derretida.' },
+    { id: 5, name: 'Empanada Árabe (Sfiha)', price: 1600, category: 'Empanadas', img: 'https://images.unsplash.com/photo-1562059390-a761a084768e?w=600&h=400&fit=crop', desc: 'Carne especiada con limón, receta libanesa.' },
+    { id: 6, name: 'Empanada de Verdura', price: 1350, category: 'Empanadas', img: 'https://images.unsplash.com/photo-1645696996945-3254a0d35920?w=600&h=400&fit=crop', desc: 'Espinaca, cebolla y huevo duro.' },
+    { id: 7, name: 'Pizza Muzzarella', price: 7500, category: 'Pizzas', img: 'https://images.unsplash.com/photo-1574071318508-1cdbad80ad38?w=600&h=400&fit=crop', desc: 'Doble muzzarella con aceitunas verdes.' },
+    { id: 8, name: 'Pizza Napolitana', price: 8500, category: 'Pizzas', img: 'https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?w=600&h=400&fit=crop', desc: 'Rodajas de tomate, ajo y albahaca fresca.' },
+    { id: 9, name: 'Pizza Fugazzeta', price: 8000, category: 'Pizzas', img: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=600&h=400&fit=crop', desc: 'Cebolla caramelizada abundante con muzzarella.' },
+    { id: 10, name: 'Pizza Calabresa', price: 8500, category: 'Pizzas', img: 'https://images.unsplash.com/photo-1534308983496-4fabb1a015ee?w=600&h=400&fit=crop', desc: 'Longaniza calabresa picante con morrones.' },
+    { id: 11, name: 'Coca-Cola 1.5L', price: 2500, category: 'Bebidas', img: 'https://images.unsplash.com/photo-1629203851122-3726ecdf080e?w=600&h=400&fit=crop', desc: 'La clásica, bien helada.' },
+    { id: 12, name: 'Sprite 1.5L', price: 2500, category: 'Bebidas', img: 'https://images.unsplash.com/photo-1625772299848-391b6a87d7b3?w=600&h=400&fit=crop', desc: 'Lima-limón refrescante.' },
+    { id: 13, name: 'Agua Mineral 500ml', price: 1200, category: 'Bebidas', img: 'https://images.unsplash.com/photo-1564419320461-6eb9039cfa3e?w=600&h=400&fit=crop', desc: 'Sin gas, ideal para acompañar.' },
+    { id: 14, name: 'Cerveza Quilmes 1L', price: 3500, category: 'Bebidas', img: 'https://images.unsplash.com/photo-1535958636474-b021ee887b13?w=600&h=400&fit=crop', desc: 'Retornable, bien fría.' },
+    { id: 15, name: 'Fainá', price: 3500, category: 'Pizzas', img: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=600&h=400&fit=crop', desc: 'Harina de garbanzo crocante, el clásico acompañante.' },
 ];
 
 // ---- 2. SEED DATA: Promo Banners ----
@@ -30,29 +30,50 @@ const SEED_BANNERS = [
 
 // ---- 3. STATE ----
 let products = JSON.parse(localStorage.getItem('bocado_products')) || SEED_PRODUCTS;
-let banners  = JSON.parse(localStorage.getItem('bocado_banners'))  || SEED_BANNERS;
+let banners = JSON.parse(localStorage.getItem('bocado_banners')) || SEED_BANNERS;
 let cart = [];
 let currentCat = 'Todo';
 let searchQuery = '';
 let currentSlide = 0;
-// Map Variables
-let map = null;
-let marker = null;
-let currentLat = -26.830419; // Default center (Tucuman)
-let currentLng = -65.203794;
 
-// Persist seed on first run
-if (!localStorage.getItem('bocado_products')) localStorage.setItem('bocado_products', JSON.stringify(SEED_PRODUCTS));
-if (!localStorage.getItem('bocado_banners'))  localStorage.setItem('bocado_banners',  JSON.stringify(SEED_BANNERS));
+// ===================================================
+// CONFIGURACIÓN MAESTRA (Sólo para Synergy Dev)
+// ===================================================
+const CLOUD_URL = 'https://script.google.com/macros/s/AKfycbxeo8pT8_Zo0zPbchpSYinMBWokiwH-ZhScZNQFwz7Amt08IRtHuRmsA1eV8Xkc2bK7/exec'; // Pega aquí tu URL de Google Apps Script (terminada en /exec)
+// ===================================================
 
 // ---- 4. INIT ----
 async function init() {
-    // await initSecurity(); // <-- KILL SWITCH DESACTIVADO POR AHORA
     renderBanners();
     renderCategories();
     renderProducts();
     setupEvents();
     startCarousel();
+
+    // Intentar carga desde la nube si hay URL configurada
+    if (CLOUD_URL) {
+        await syncFromCloud();
+    }
+}
+
+async function syncFromCloud() {
+    try {
+        const res = await fetch(CLOUD_URL);
+        const data = await res.json();
+        if (data.products) {
+            products = data.products;
+            localStorage.setItem('bocado_products', JSON.stringify(products));
+        }
+        if (data.banners) {
+            banners = data.banners;
+            localStorage.setItem('bocado_banners', JSON.stringify(banners));
+        }
+        renderBanners();
+        renderCategories();
+        renderProducts();
+    } catch (e) {
+        console.error("Cloud Sync Error:", e);
+    }
 }
 
 // ==== KILL SWITCH (SISTEMA DE SEGURIDAD SAAS) ====
@@ -60,8 +81,8 @@ async function initSecurity() {
     try {
         // Imagina que este JSON lo subes a tu propio GitHub o servidor:
         // Contenido del JSON: { "bocado_demo": true, "pizzeria_juan": false }
-        const CONTROL_URL = 'https://tudominio.com/clientes.json'; 
-        
+        const CONTROL_URL = 'https://tudominio.com/clientes.json';
+
         // Descomentar lo siguiente cuando tengas la URL real
         /*
         const res = await fetch(CONTROL_URL);
@@ -100,7 +121,7 @@ function getDirectImageUrl(url) {
 // ---- 6. CAROUSEL ----
 function renderBanners() {
     const track = document.getElementById('promo-track');
-    const dots  = document.getElementById('promo-dots');
+    const dots = document.getElementById('promo-dots');
     if (!track || !dots) return;
 
     if (banners.length === 0) {
@@ -141,7 +162,7 @@ function startCarousel() {
 }
 
 function lightenColor(hex, percent) {
-    const num = parseInt(hex.replace('#',''), 16);
+    const num = parseInt(hex.replace('#', ''), 16);
     const r = Math.min(255, (num >> 16) + percent);
     const g = Math.min(255, ((num >> 8) & 0x00FF) + percent);
     const b = Math.min(255, (num & 0x0000FF) + percent);
@@ -237,10 +258,10 @@ function updateNote(id, text) {
 
 function refresh() {
     renderProducts();
-    const qty   = cart.reduce((a, c) => a + c.qty, 0);
+    const qty = cart.reduce((a, c) => a + c.qty, 0);
     const total = cart.reduce((a, c) => a + c.price * c.qty, 0);
 
-    const bar   = document.getElementById('cart-float');
+    const bar = document.getElementById('cart-float');
     const badge = document.getElementById('header-badge');
 
     if (qty > 0) {
@@ -278,10 +299,10 @@ function openCheckout() {
 
 // ---- 10. FORM VALIDATION ----
 function validateForm() {
-    const name  = document.getElementById('cust-name');
+    const name = document.getElementById('cust-name');
     const phone = document.getElementById('cust-phone');
     const delivery = document.getElementById('cust-delivery').value;
-    const addr  = document.getElementById('cust-address');
+    const addr = document.getElementById('cust-address');
     let ok = true;
 
     // Name
@@ -319,18 +340,18 @@ function initMap() {
         setTimeout(() => map.invalidateSize(), 100);
         return;
     }
-    
+
     document.getElementById('map').style.display = 'block';
-    
+
     map = L.map('map').setView([currentLat, currentLng], 14);
-    
+
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors'
     }).addTo(map);
 
-    marker = L.marker([currentLat, currentLng], {draggable: true}).addTo(map);
+    marker = L.marker([currentLat, currentLng], { draggable: true }).addTo(map);
 
-    marker.on('dragend', function(e) {
+    marker.on('dragend', function (e) {
         const pos = marker.getLatLng();
         currentLat = pos.lat;
         currentLng = pos.lng;
@@ -363,13 +384,13 @@ function submitOrder(e) {
         return;
     }
 
-    const name     = document.getElementById('cust-name').value.trim();
-    const phone    = document.getElementById('cust-phone').value.trim();
+    const name = document.getElementById('cust-name').value.trim();
+    const phone = document.getElementById('cust-phone').value.trim();
     const delivery = document.getElementById('cust-delivery').value;
-    const address  = document.getElementById('cust-address')?.value?.trim() || '';
-    const payment  = document.getElementById('cust-payment').value;
-    const total    = cart.reduce((a, c) => a + c.price * c.qty, 0);
-    const orderId  = `${new Date().toISOString().slice(0,10).replace(/-/g,'')}-${String(Date.now()).slice(-6)}`;
+    const address = document.getElementById('cust-address')?.value?.trim() || '';
+    const payment = document.getElementById('cust-payment').value;
+    const total = cart.reduce((a, c) => a + c.price * c.qty, 0);
+    const orderId = `${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${String(Date.now()).slice(-6)}`;
 
     // Build message with plain text symbols (no emojis to ensure compatibility)
     let msg = `=== *Pedido Bocado* ===\n\n`;
@@ -402,7 +423,7 @@ function submitOrder(e) {
 
     msg += `🖨️ *Ver e imprimir:*\n${receiptUrl}`;
 
-    const shopNum = '543815692499';
+    const shopNum = '543813010464';
     window.open(`https://wa.me/${shopNum}?text=${encodeURIComponent(msg)}`, '_blank');
 }
 
