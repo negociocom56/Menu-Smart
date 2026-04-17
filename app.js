@@ -36,6 +36,12 @@ let currentCat = 'Todo';
 let searchQuery = '';
 let currentSlide = 0;
 
+// Map Variables
+let map = null;
+let marker = null;
+let currentLat = -26.830419; // Default center (Tucuman)
+let currentLng = -65.203794;
+
 // ===================================================
 // CONFIGURACIÓN MAESTRA (Sólo para Synergy Dev)
 // ===================================================
@@ -359,6 +365,38 @@ function initMap() {
     });
 }
 
+// ---- 11.1 ADDRESS SEARCH (GEOCODING) ----
+let searchTimer = null;
+async function searchAddress(query) {
+    if (!query || query.length < 5) return;
+    
+    // Debounce to avoid hitting API too hard
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(async () => {
+        try {
+            // Append city for better results if user doesn't provide it
+            const fullQuery = query.includes('Tucuman') ? query : `${query}, San Miguel de Tucumán`;
+            const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(fullQuery)}&limit=1`);
+            const data = await res.json();
+            
+            if (data && data.length > 0) {
+                const lat = parseFloat(data[0].lat);
+                const lon = parseFloat(data[0].lon);
+                
+                currentLat = lat;
+                currentLng = lon;
+                
+                if (map && marker) {
+                    map.setView([lat, lon], 16);
+                    marker.setLatLng([lat, lon]);
+                }
+            }
+        } catch (e) {
+            console.error("Geocoding failed", e);
+        }
+    }, 800);
+}
+
 async function reverseGeocode(lat, lng) {
     document.getElementById('cust-address').placeholder = "Buscando dirección...";
     try {
@@ -423,7 +461,7 @@ function submitOrder(e) {
 
     msg += `🖨️ *Ver e imprimir:*\n${receiptUrl}`;
 
-    const shopNum = '543813010464';
+    const shopNum = '543815692499';
     window.open(`https://wa.me/${shopNum}?text=${encodeURIComponent(msg)}`, '_blank');
 }
 
@@ -461,6 +499,11 @@ function setupEvents() {
     });
 
     document.getElementById('checkout-form')?.addEventListener('submit', submitOrder);
+
+    // Address search link
+    document.getElementById('cust-address')?.addEventListener('input', e => {
+        searchAddress(e.target.value);
+    });
 }
 
 // ---- 14. TOAST ----

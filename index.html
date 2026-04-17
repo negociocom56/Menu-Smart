@@ -1,16 +1,20 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bocado | Pedí Online</title>
-    <meta name="description" content="Bocado - Tu menú digital premium. Pedí empanadas, pizzas y más directo a tu WhatsApp.">
+    <meta name="description"
+        content="Bocado - Tu menú digital premium. Pedí empanadas, pizzas y más directo a tu WhatsApp.">
     <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/3075/3075977.png" type="image/png">
     <!-- Leaflet CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
     <!-- Announcement Bar -->
@@ -73,10 +77,12 @@
                 <a href="#" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
                 <a href="#" title="TikTok"><i class="fab fa-tiktok"></i></a>
             </div>
-            
-            <a href="https://synergydev.com.ar/" target="_blank" style="text-decoration: none; color: inherit; display: block; margin: 20px 0;">
+
+            <a href="https://synergydev.com.ar/" target="_blank"
+                style="text-decoration: none; color: inherit; display: block; margin: 20px 0;">
                 <div style="margin-bottom: 5px;">
-                    <img src="https://synergydev.com.ar/Img/upscalemedia-transformed%20(3).webp" alt="Synergy Dev Logo" style="height: 30px; opacity: 0.8; filter: grayscale(1) invert(0.5);">
+                    <img src="https://synergydev.com.ar/Img/upscalemedia-transformed%20(3).webp" alt="Synergy Dev Logo"
+                        style="height: 30px; opacity: 0.8; filter: grayscale(1) invert(0.5);">
                 </div>
                 <p class="footer-copy" style="margin: 0;">
                     Desarrollado por <strong>Synergy Dev</strong>
@@ -117,12 +123,13 @@
 
                 <div class="form-group">
                     <label>NOMBRE COMPLETO</label>
-                    <input type="text" id="cust-name" placeholder="Ej: Marcelo Varela" required minlength="3">
+                    <input type="text" id="cust-name" placeholder="Ej: Abel Varela" required minlength="3">
                 </div>
 
                 <div class="form-group">
                     <label>TELÉFONO (WHATSAPP)</label>
-                    <input type="tel" id="cust-phone" placeholder="Ej: 3813010464" required pattern="[0-9]{10,13}" inputmode="numeric">
+                    <input type="tel" id="cust-phone" placeholder="Ej: 3813010464" required pattern="[0-9]{10,13}"
+                        inputmode="numeric">
                 </div>
 
                 <div class="form-row">
@@ -145,7 +152,8 @@
                 <div class="form-group" id="address-group" style="display:none;">
                     <label>DIRECCIÓN COMPLETA</label>
                     <div id="map" style="display:none;"></div>
-                    <p style="font-size:0.7rem; color:var(--text-muted); margin-bottom: 6px;" id="map-hint">Ubicá el pin en tu domicilio exacto para ayudarnos.</p>
+                    <p style="font-size:0.7rem; color:var(--text-muted); margin-bottom: 6px;" id="map-hint">Ubicá el pin
+                        en tu domicilio exacto para ayudarnos.</p>
                     <textarea id="cust-address" rows="2" placeholder="Calle, número, entre calles, depto..."></textarea>
                 </div>
 
@@ -160,7 +168,9 @@
     <div id="toast" class="toast"><i class="fas fa-check-circle"></i> <span id="toast-msg"></span></div>
 
     <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="app.js"></script>
 </body>
+
 </html>
