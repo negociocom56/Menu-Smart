@@ -402,7 +402,7 @@ function submitOrder(e) {
 
     msg += `🖨️ *Ver e imprimir:*\n${receiptUrl}`;
 
-    const shopNum = '543813010464';
+    const shopNum = '543815692499';
     window.open(`https://wa.me/${shopNum}?text=${encodeURIComponent(msg)}`, '_blank');
 }
 
