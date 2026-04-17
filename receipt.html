@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recibo | Bocado</title>
+    <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/3075/3075977.png" type="image/png">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Outfit',sans-serif; background:#faf7f4; padding:20px; color:#1a1311; }
+
+        .ticket {
+            background:white; max-width:420px; margin:0 auto; padding:36px 30px;
+            border-radius:20px; box-shadow:0 10px 40px rgba(0,0,0,0.06);
+            position:relative; overflow:hidden;
+        }
+        .ticket::before {
+            content:''; position:absolute; top:0; left:0; right:0; height:5px;
+            background:linear-gradient(135deg, #d4850e, #f5a623);
+        }
+
+        .header { text-align:center; padding-bottom:24px; border-bottom:2px dashed #e8e0d8; margin-bottom:24px; }
+        .header h1 { font-size:2rem; font-weight:800; letter-spacing:-0.5px; }
+        .header .tagline { color:#d4850e; font-size:0.85rem; font-weight:600; margin:4px 0 12px; }
+        .order-code {
+            display:inline-block; background:#faf7f4; padding:6px 14px;
+            border-radius:8px; font-size:0.72rem; font-weight:700;
+            letter-spacing:1px; color:#6b5e55;
+        }
+
+        .items { margin-bottom:20px; }
+        .item-row {
+            display:flex; justify-content:space-between; align-items:flex-start;
+            padding:10px 0; border-bottom:1px solid #f3eeea;
+        }
+        .item-row:last-child { border-bottom:none; }
+        .item-name { font-weight:600; font-size:0.9rem; }
+        .item-note { font-size:0.72rem; color:#d4850e; font-style:italic; margin-top:2px; }
+        .item-qty { font-size:0.78rem; color:#a89e96; }
+        .item-subtotal { font-weight:700; text-align:right; white-space:nowrap; }
+
+        .total-section {
+            border-top:2px solid #1a1311; padding-top:16px; margin-top:16px;
+            display:flex; justify-content:space-between; align-items:center;
+        }
+        .total-label { font-size:1.1rem; font-weight:800; text-transform:uppercase; }
+        .total-amount { font-size:1.4rem; font-weight:800; color:#d4850e; }
+
+        .customer-info {
+            margin-top:28px; padding-top:20px; border-top:1px dashed #e8e0d8;
+            font-size:0.82rem; color:#6b5e55; line-height:1.8;
+        }
+        .customer-info strong { color:#1a1311; }
+
+        .thanks {
+            text-align:center; margin-top:24px; font-size:0.85rem;
+            font-style:italic; color:#a89e96;
+        }
+
+        .btn-print {
+            display:block; width:100%; padding:16px; margin-top:28px;
+            background:#1a1311; color:white; text-align:center;
+            text-decoration:none; border-radius:14px; font-weight:700;
+            font-size:0.95rem; transition:opacity 0.2s;
+        }
+        .btn-print:hover { opacity:0.85; }
+
+        .error-page { text-align:center; padding:80px 20px; color:#a89e96; }
+        .error-page i { font-size:3rem; margin-bottom:16px; display:block; opacity:0.3; }
+
+        @media print {
+            .btn-print { display:none; }
+            body { background:white; padding:0; }
+            .ticket { box-shadow:none; border:1px solid #eee; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="ticket" id="ticket">
+        <div class="header">
+            <h1>BOCADO</h1>
+            <div class="tagline">Smart Menu & Delivery</div>
+            <div class="order-code" id="order-code">CARGANDO...</div>
+        </div>
+
+        <div class="items" id="items-list">
+            <p style="text-align:center;color:#a89e96;padding:20px;">Procesando pedido...</p>
+        </div>
+
+        <div class="total-section">
+            <span class="total-label">Total</span>
+            <span class="total-amount" id="order-total">$0</span>
+        </div>
+
+        <div class="customer-info" id="customer-info"></div>
+
+        <p class="thanks">¡Muchas gracias por elegir Bocado! 🤎</p>
+
+        <a href="javascript:window.print()" class="btn-print">🖨️ Imprimir Recibo</a>
+    </div>
+
+    <script>
+        try {
+            const params = new URLSearchParams(window.location.search);
+            const raw = params.get('data');
+
+            if (!raw) throw new Error('Sin datos');
+
+            const data = JSON.parse(decodeURIComponent(escape(atob(raw))));
+
+            // Order ID
+            document.getElementById('order-code').innerText = `PEDIDO: ${data.id}`;
+
+            // Items
+            const itemsEl = document.getElementById('items-list');
+            itemsEl.innerHTML = data.items.map(i => `
+                <div class="item-row">
+                    <div>
+                        <div class="item-name">${i.n}</div>
+                        ${i.note ? `<div class="item-note">📝 ${i.note}</div>` : ''}
+                        <div class="item-qty">$${i.p.toLocaleString('es-AR')} × ${i.q}</div>
+                    </div>
+                    <div class="item-subtotal">$${(i.p * i.q).toLocaleString('es-AR')}</div>
+                </div>
+            `).join('');
+
+            // Total
+            document.getElementById('order-total').innerText = `$${parseInt(data.total).toLocaleString('es-AR')}`;
+
+            // Customer
+            document.getElementById('customer-info').innerHTML = `
+                <p><strong>👤 Cliente:</strong> ${data.name}</p>
+                <p><strong>📱 Teléfono:</strong> ${data.phone}</p>
+                <p><strong>🏠 Entrega:</strong> ${data.address}</p>
+                <p><strong>💳 Pago:</strong> ${data.payment}</p>
+                <p><strong>📅 Fecha:</strong> ${new Date().toLocaleString('es-AR')}</p>
+                <p><strong>🏪 Sucursal:</strong> Sarmiento 941, Tucumán</p>
+            `;
+
+        } catch (err) {
+            document.getElementById('ticket').innerHTML = `
+                <div class="error-page">
+                    <i>⚠️</i>
+                    <h2>No se pudo cargar el recibo</h2>
+                    <p style="margin-top:10px;">El enlace puede estar dañado o incompleto.</p>
+                    <a href="index.html" style="display:inline-block;margin-top:20px;color:#d4850e;font-weight:600;">← Volver al menú</a>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bocado | Pedí Online</title>
+    <meta name="description" content="Bocado - Tu menú digital premium. Pedí empanadas, pizzas y más directo a tu WhatsApp.">
+    <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/3075/3075977.png" type="image/png">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Announcement Bar -->
+    <div class="announcement-bar">
+        <div class="container announcement-container">
+            <div class="announcement-content">
+                ⏰ Abierto Lu-Sa: 12:00 a 15:30 y 19:00 a 23:00 • Domingos: 19:00 a 23:00
+            </div>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="app-header">
+        <div class="container">
+            <a href="index.html" class="brand">
+                <div class="brand-logo">B</div>
+                <div class="brand-text">
+                    <h1>Bocado</h1>
+                    <span>Smart Menu</span>
+                </div>
+            </a>
+            <button class="header-cart" id="cart-header-btn">
+                <i class="fas fa-shopping-bag"></i>
+                <span class="cart-badge" id="header-badge">0</span>
+            </button>
+        </div>
+    </header>
+
+    <main class="container">
+
+        <!-- Promo Carousel -->
+        <div class="promo-carousel" id="promo-carousel">
+            <div class="promo-track" id="promo-track">
+                <!-- Slides injected by JS from localStorage -->
+            </div>
+        </div>
+        <div class="promo-dots" id="promo-dots"></div>
+
+        <!-- Search -->
+        <div class="search-section">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="search-input" placeholder="Buscar empanadas, pizzas, bebidas...">
+            </div>
+        </div>
+
+        <!-- Categories -->
+        <nav class="categories-scroll" id="categories-nav">
+            <!-- Dynamic categories -->
+        </nav>
+
+        <!-- Products -->
+        <div class="product-grid" id="product-list"></div>
+
+        <!-- Footer -->
+        <div class="footer-section">
+            <div class="social-icons">
+                <a href="#" title="Instagram"><i class="fab fa-instagram"></i></a>
+                <a href="#" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+                <a href="#" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                <a href="#" title="TikTok"><i class="fab fa-tiktok"></i></a>
+            </div>
+            
+            <a href="https://synergydev.com.ar/" target="_blank" style="text-decoration: none; color: inherit; display: block; margin: 20px 0;">
+                <div style="margin-bottom: 5px;">
+                    <img src="https://synergydev.com.ar/Img/upscalemedia-transformed%20(3).webp" alt="Synergy Dev Logo" style="height: 30px; opacity: 0.8; filter: grayscale(1) invert(0.5);">
+                </div>
+                <p class="footer-copy" style="margin: 0;">
+                    Desarrollado por <strong>Synergy Dev</strong>
+                </p>
+            </a>
+            <p class="footer-copy">Todos los derechos reservados © 2026</p>
+        </div>
+    </main>
+
+    <!-- Floating Cart -->
+    <div id="cart-float" class="cart-float">
+        <div class="info">
+            <small>TU PEDIDO (<span id="cart-qty">0</span>)</small>
+            <div class="total">$ <span id="cart-total">0</span></div>
+        </div>
+        <button class="btn-order" id="open-checkout">
+            VER PEDIDO <i class="fas fa-arrow-right"></i>
+        </button>
+    </div>
+
+    <!-- Checkout Overlay -->
+    <div id="checkout-overlay" class="checkout-overlay">
+        <div class="container">
+            <div class="checkout-header">
+                <button id="close-checkout"><i class="fas fa-chevron-left"></i></button>
+                <h2>Tu Pedido</h2>
+            </div>
+
+            <div id="checkout-items"></div>
+
+            <div class="order-total">
+                <span>Total</span>
+                <span class="amount">$ <span id="checkout-total">0</span></span>
+            </div>
+
+            <form id="checkout-form" class="form-section" novalidate>
+                <h3><i class="fas fa-user-circle"></i> Datos de Entrega</h3>
+
+                <div class="form-group">
+                    <label>NOMBRE COMPLETO</label>
+                    <input type="text" id="cust-name" placeholder="Ej: Marcelo Varela" required minlength="3">
+                </div>
+
+                <div class="form-group">
+                    <label>TELÉFONO (WHATSAPP)</label>
+                    <input type="tel" id="cust-phone" placeholder="Ej: 3813010464" required pattern="[0-9]{10,13}" inputmode="numeric">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>ENTREGA</label>
+                        <select id="cust-delivery">
+                            <option value="retiro">🏪 Paso a Retirar</option>
+                            <option value="delivery">🛵 Envío a Domicilio</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>PAGO</label>
+                        <select id="cust-payment">
+                            <option value="EFECTIVO">💵 Efectivo</option>
+                            <option value="TRANSFERENCIA">💳 Transferencia</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group" id="address-group" style="display:none;">
+                    <label>DIRECCIÓN COMPLETA</label>
+                    <div id="map" style="display:none;"></div>
+                    <p style="font-size:0.7rem; color:var(--text-muted); margin-bottom: 6px;" id="map-hint">Ubicá el pin en tu domicilio exacto para ayudarnos.</p>
+                    <textarea id="cust-address" rows="2" placeholder="Calle, número, entre calles, depto..."></textarea>
+                </div>
+
+                <button type="submit" class="btn-whatsapp">
+                    <i class="fab fa-whatsapp"></i> Confirmar por WhatsApp
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="toast"><i class="fas fa-check-circle"></i> <span id="toast-msg"></span></div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="app.js"></script>
+</body>
+</html>
