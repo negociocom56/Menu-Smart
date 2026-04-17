@@ -438,7 +438,7 @@ function submitOrder(e) {
         msg += `\n`;
     });
 
-    msg += `\n$$$ *Total: $${total.toLocaleString('es-AR')}* $$$\n\n`;
+    msg += `$$$ *Total: $${total.toLocaleString('es-AR')}* $$$\n\n`;
     msg += `>> Nombre: ${name}\n`;
     msg += `>> Teléfono: ${phone}\n`;
     msg += `>> Dirección: ${delivery === 'delivery' ? address : 'Paso a Retirar'}\n`;
@@ -446,20 +446,25 @@ function submitOrder(e) {
         msg += `>> Mapa: https://maps.google.com/?q=${currentLat},${currentLng}\n`;
     }
     msg += `>> Forma de pago: ${payment}\n`;
-    msg += `>> Sucursal: Sarmiento 941\n`;
     msg += `>> Pedido: ${orderId}\n\n`;
 
-    // Receipt data as Base64
+    // Receipt data (Optimized for length with aliases)
     const receiptPayload = {
-        id: orderId, name, phone, total, payment, delivery,
-        address: delivery === 'delivery' ? address : 'Paso a Retirar',
-        items: cart.map(c => ({ n: c.name, q: c.qty, p: c.price, note: c.note || '' }))
+        i: orderId, // id
+        n: name,    // name
+        p: phone,   // phone
+        t: total,   // total
+        m: payment, // payment method
+        d: delivery,// delivery type
+        a: delivery === 'delivery' ? address : 'Paso a Retirar', // address
+        it: cart.map(c => ({ n: c.name, q: c.qty, p: c.price, o: c.note || '' })) // items (note alias 'o')
     };
+
     const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(receiptPayload))));
     const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
     const receiptUrl = `${baseUrl}receipt.html?data=${b64}`;
 
-    msg += `🖨️ *Ver e imprimir:*\n${receiptUrl}`;
+    msg += `🖨️ *Ver Comprobante:*\n${receiptUrl}`;
 
     const shopNum = '543815692499';
     window.open(`https://wa.me/${shopNum}?text=${encodeURIComponent(msg)}`, '_blank');

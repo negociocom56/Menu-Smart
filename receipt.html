@@ -102,14 +102,52 @@
     </div>
 
     <script>
-        try {
-            const params = new URLSearchParams(window.location.search);
-            const raw = params.get('data');
+        // CONFIGURACIÓN MAESTRA (Sólo para Synergy Dev)
+        const cloudUrl = 'https://script.google.com/macros/s/AKfycbxeo8pT8_Zo0zPbchpSYinMBWokiwH-ZhScZNQFwz7Amt08IRtHuRmsA1eV8Xkc2bK7/exec';
 
-            if (!raw) throw new Error('Sin datos');
+        function init() {
+            try {
+                const params = new URLSearchParams(window.location.search);
+                const rawData = params.get('data');
 
-            const data = JSON.parse(decodeURIComponent(escape(atob(raw))));
+                if (!rawData) throw new Error('Sin datos');
 
+                // Decodificar Base64
+                const json = JSON.parse(decodeURIComponent(escape(atob(rawData))));
+
+                // Mapear alias a estructura legible
+                const data = {
+                    id: json.i,
+                    name: json.n,
+                    phone: json.p,
+                    total: json.t,
+                    payment: json.m || 'S/E',
+                    delivery: json.d || 'S/E',
+                    address: json.a || 'Paso a Retirar',
+                    items: (json.it || []).map(item => ({
+                        n: item.n,
+                        q: item.q,
+                        p: item.p,
+                        note: item.o || ''
+                    }))
+                };
+
+                renderOrder(data);
+
+            } catch (err) {
+                console.error(err);
+                document.getElementById('ticket').innerHTML = `
+                    <div class="error-page">
+                        <i>⚠️</i>
+                        <h2>No se pudo cargar el recibo</h2>
+                        <p style="margin-top:10px;">El enlace puede estar incompleto.</p>
+                        <a href="index.html" style="display:inline-block;margin-top:20px;color:#d4850e;font-weight:600;">← Volver al menú</a>
+                    </div>
+                `;
+            }
+        }
+
+        function renderOrder(data) {
             // Order ID
             document.getElementById('order-code').innerText = `PEDIDO: ${data.id}`;
 
@@ -136,19 +174,10 @@
                 <p><strong>🏠 Entrega:</strong> ${data.address}</p>
                 <p><strong>💳 Pago:</strong> ${data.payment}</p>
                 <p><strong>📅 Fecha:</strong> ${new Date().toLocaleString('es-AR')}</p>
-                <p><strong>🏪 Sucursal:</strong> Sarmiento 941, Tucumán</p>
-            `;
-
-        } catch (err) {
-            document.getElementById('ticket').innerHTML = `
-                <div class="error-page">
-                    <i>⚠️</i>
-                    <h2>No se pudo cargar el recibo</h2>
-                    <p style="margin-top:10px;">El enlace puede estar dañado o incompleto.</p>
-                    <a href="index.html" style="display:inline-block;margin-top:20px;color:#d4850e;font-weight:600;">← Volver al menú</a>
-                </div>
             `;
         }
+
+        init();
     </script>
 </body>
 </html>
