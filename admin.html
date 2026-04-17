@@ -138,6 +138,224 @@
 
     <div id="toast" class="toast"><i class="fas fa-check-circle"></i> <span id="toast-msg"></span></div>
 
+    <script>
+        // --- Init & State ---
+        // ===================================================
+        // CONFIGURACIÓN MAESTRA (Sólo para Synergy Dev)
+        // ===================================================
+        const cloudUrl = 'https://script.google.com/macros/s/AKfycbxeo8pT8_Zo0zPbchpSYinMBWokiwH-ZhScZNQFwz7Amt08IRtHuRmsA1eV8Xkc2bK7/exec'; 
+        // ===================================================
+
+        let products = JSON.parse(localStorage.getItem('bocado_products')) || [];
+        let banners  = JSON.parse(localStorage.getItem('bocado_banners'))  || [];
+
+        async function syncFromCloud() {
+            if (!cloudUrl) return;
+            try {
+                console.log("Sincronizando desde la nube...");
+                const res = await fetch(cloudUrl);
+                const data = await res.json();
+                console.log("Datos recibidos:", data);
+                if (data.products && data.products.length > 0) {
+                    products = data.products;
+                    localStorage.setItem('bocado_products', JSON.stringify(products));
+                }
+                if (data.banners && data.banners.length > 0) {
+                    banners = data.banners;
+                    localStorage.setItem('bocado_banners', JSON.stringify(banners));
+                }
+                renderProducts();
+                renderBanners();
+                toast("Nube actualizada ✓");
+            } catch (e) {
+                console.error("Error en syncFromCloud:", e);
+                toast("Error al sincronizar ❌");
+            }
+        }
+
+        async function cloudSave(action, payload) {
+            if (!cloudUrl) return;
+            toast("Guardando en la nube...");
+            try {
+                // Usamos un formulario oculto o un fetch con mode: 'no-cors' para evitar bloqueos de Google
+                // pero lo ideal es intentar fetch normal primero.
+                await fetch(cloudUrl, {
+                    method: 'POST',
+                    mode: 'no-cors', 
+                    body: JSON.stringify({ action, payload })
+                });
+                // Apps Script no permite leer la respuesta con no-cors, así que asumimos éxito y resincronizamos en 2 seg
+                setTimeout(syncFromCloud, 2000); 
+            } catch (e) {
+                console.error("Error en cloudSave:", e);
+                toast("Error de conexión ❌");
+            }
+        }
+
+        // --- Render Products ---
+        function renderProducts() {
+            const el = document.getElementById('product-list');
+            if (products.length === 0) {
+                el.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:30px;">Sin productos aún.</p>';
+                return;
+            }
+            el.innerHTML = products.map(p => `
+                <div class="admin-product-row">
+                    <img src="${p.img}" alt="" onerror="this.src='https://placehold.co/50x50/f3eeea/a89e96?text=?'">
+                    <div class="info">
+                        <h4>${p.name}</h4>
+                        <div class="meta-text">${p.category} · ${p.desc?.substring(0,35) || ''}...</div>
+                    </div>
+                    <span class="price-tag">$${p.price.toLocaleString('es-AR')}</span>
+                    <div class="actions">
+                        <button class="btn-edit" onclick="editProduct(${p.id})" title="Editar"><i class="fas fa-pen"></i></button>
+                        <button class="btn-del" onclick="deleteProduct(${p.id})" title="Eliminar"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // --- Render Banners ---
+        function renderBanners() {
+            const el = document.getElementById('banner-list');
+            if (banners.length === 0) {
+                el.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:20px;">Sin promociones.</p>';
+                return;
+            }
+            el.innerHTML = banners.map(b => `
+                <div class="banner-item">
+                    <div style="width:40px;height:40px;border-radius:8px;background:${b.color};flex-shrink:0;"></div>
+                    <div class="banner-text">
+                        <h4>${b.title}</h4>
+                        <p>${b.subtitle || ''}</p>
+                    </div>
+                    <div style="display:flex;gap:6px;">
+                        <button onclick="editBanner(${b.id})" style="background:var(--bg-muted);border:none;width:32px;height:32px;border-radius:8px;cursor:pointer;color:var(--text-muted);"><i class="fas fa-pen"></i></button>
+                        <button onclick="deleteBanner(${b.id})" style="background:#fde8e8;border:none;width:32px;height:32px;border-radius:8px;cursor:pointer;color:#e74c3c;"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // --- Product CRUD ---
+        function parseImageUrl(url) {
+            if (!url) return 'https://placehold.co/600x400/f3eeea/a89e96?text=Producto';
+            if (url.includes('drive.google.com')) {
+                const id = url.match(/\/d\/([a-zA-Z0-9_-]+)/)?.[1] || url.match(/id=([a-zA-Z0-9_-]+)/)?.[1];
+                if (id) return `https://drive.google.com/uc?export=view&id=${id}`;
+            }
+            return url;
+        }
+
+        document.getElementById('product-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const editId = document.getElementById('p-edit-id').value;
+            const prod = {
+                id: editId ? parseInt(editId) : Date.now(),
+                name: document.getElementById('p-name').value,
+                price: parseFloat(document.getElementById('p-price').value),
+                category: document.getElementById('p-category').value,
+                img: parseImageUrl(document.getElementById('p-img').value),
+                desc: document.getElementById('p-desc').value
+            };
+            if (editId) {
+                products = products.map(p => p.id === parseInt(editId) ? prod : p);
+            } else {
+                products.push(prod);
+            }
+            localStorage.setItem('bocado_products', JSON.stringify(products));
+            resetProductForm(); renderProducts();
+            await cloudSave('saveProducts', products);
+        };
+
+        window.editProduct = (id) => {
+            const p = products.find(x => x.id === id);
+            document.getElementById('p-edit-id').value = p.id;
+            document.getElementById('p-name').value = p.name;
+            document.getElementById('p-price').value = p.price;
+            document.getElementById('p-category').value = p.category;
+            document.getElementById('p-img').value = p.img;
+            document.getElementById('p-desc').value = p.desc;
+            document.getElementById('product-form-title').innerHTML = '<i class="fas fa-edit"></i> Editando: ' + p.name;
+            document.getElementById('p-cancel').style.display = 'block';
+            window.scrollTo({top: document.getElementById('product-form').offsetTop - 100, behavior: 'smooth'});
+        };
+
+        window.deleteProduct = async (id) => {
+            if (!confirm('¿Eliminar este producto?')) return;
+            products = products.filter(p => p.id !== id);
+            localStorage.setItem('bocado_products', JSON.stringify(products));
+            renderProducts();
+            await cloudSave('saveProducts', products);
+        };
+
+        function resetProductForm() {
+            document.getElementById('p-edit-id').value = '';
+            document.getElementById('product-form').reset();
+            document.getElementById('product-form-title').innerHTML = '<i class="fas fa-plus-circle"></i> Agregar Producto';
+            document.getElementById('p-cancel').style.display = 'none';
+        }
+        document.getElementById('p-cancel').onclick = resetProductForm;
+
+        // --- Banner CRUD ---
+        document.getElementById('banner-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const editId = document.getElementById('b-edit-id').value;
+            const banner = {
+                id: editId ? parseInt(editId) : Date.now(),
+                title: document.getElementById('b-title').value,
+                subtitle: document.getElementById('b-subtitle').value,
+                color: document.getElementById('b-color').value,
+            };
+            if (editId) {
+                banners = banners.map(b => b.id === parseInt(editId) ? banner : b);
+            } else {
+                banners.push(banner);
+            }
+            localStorage.setItem('bocado_banners', JSON.stringify(banners));
+            resetBannerForm(); renderBanners();
+            await cloudSave('saveBanners', banners);
+        };
+
+        window.editBanner = (id) => {
+            const b = banners.find(x => x.id === id);
+            document.getElementById('b-edit-id').value = b.id;
+            document.getElementById('b-title').value = b.title;
+            document.getElementById('b-subtitle').value = b.subtitle;
+            document.getElementById('b-color').value = b.color;
+            document.getElementById('banner-form-title').innerHTML = '<i class="fas fa-edit"></i> Editando promo';
+            document.getElementById('b-cancel').style.display = 'block';
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        };
+
+        window.deleteBanner = async (id) => {
+            if (!confirm('¿Eliminar esta promo?')) return;
+            banners = banners.filter(b => b.id !== id);
+            localStorage.setItem('bocado_banners', JSON.stringify(banners));
+            renderBanners();
+            await cloudSave('saveBanners', banners);
+        };
+
+        function resetBannerForm() {
+            document.getElementById('b-edit-id').value = '';
+            document.getElementById('banner-form').reset();
+            document.getElementById('b-color').value = '#1a1311';
+            document.getElementById('banner-form-title').innerHTML = '<i class="fas fa-plus-circle"></i> Nueva Promoción';
+            document.getElementById('b-cancel').style.display = 'none';
+        }
+        document.getElementById('b-cancel').onclick = resetBannerForm;
+
+        function toast(msg) {
+            const t = document.getElementById('toast');
+            document.getElementById('toast-msg').innerText = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2200);
+        }
+
+        // --- Init ---
+        renderProducts();
+        renderBanners();
+        syncFromCloud();
     </script>
 </body>
 
