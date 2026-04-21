@@ -527,7 +527,7 @@ function setupEvents() {
         let text = '';
 
         if (method === 'TRANSFERENCIA') {
-            text = 'ℹ️ <strong>Alias: XXXXXX </strong>| Se procesará el pedido una vez enviado el comprobante de la transferencia realizada vía WhatsApp.';
+            text = 'ℹ️ <strong>Alias: Purosabor2025 </strong> A nombre de: NICOLAS ANTONIO KRUGER | Se procesará el pedido una vez enviado el comprobante de la transferencia realizada vía WhatsApp.';
         } else if (method === 'MERCADO_PAGO') {
             text = 'ℹ️ <strong>El pedido se procesará una vez realizado el pago a través del enlace de pago</strong> y enviado el comprobante por WhatsApp.';
         }
