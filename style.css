@@ -481,6 +481,18 @@ body {
     animation: fadeIn 0.5s ease-out;
 }
 
+.payment-note {
+    background: var(--brand-bg);
+    border: 1px dashed var(--brand);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    margin-top: 12px;
+    font-size: 0.8rem;
+    color: var(--brand);
+    line-height: 1.4;
+    animation: fadeIn 0.3s ease;
+}
+
 .alert-icon {
     font-size: 1.8rem;
     flex-shrink: 0;

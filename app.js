@@ -369,7 +369,7 @@ function initMap() {
 let searchTimer = null;
 async function searchAddress(query) {
     if (!query || query.length < 5) return;
-    
+
     // Debounce to avoid hitting API too hard
     clearTimeout(searchTimer);
     searchTimer = setTimeout(async () => {
@@ -378,14 +378,14 @@ async function searchAddress(query) {
             const fullQuery = query.includes('Tucuman') ? query : `${query}, San Miguel de Tucumán`;
             const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(fullQuery)}&limit=1`);
             const data = await res.json();
-            
+
             if (data && data.length > 0) {
                 const lat = parseFloat(data[0].lat);
                 const lon = parseFloat(data[0].lon);
-                
+
                 currentLat = lat;
                 currentLng = lon;
-                
+
                 if (map && marker) {
                     map.setView([lat, lon], 16);
                     marker.setLatLng([lat, lon]);
@@ -426,7 +426,15 @@ function submitOrder(e) {
     const phone = document.getElementById('cust-phone').value.trim();
     const delivery = document.getElementById('cust-delivery').value;
     const address = document.getElementById('cust-address')?.value?.trim() || '';
-    const payment = document.getElementById('cust-payment').value;
+    const paymentRaw = document.getElementById('cust-payment').value;
+    const paymentNames = {
+        'EFECTIVO': 'Efectivo',
+        'TRANSFERENCIA': 'Transferencia',
+        'MERCADO_PAGO': 'Mercado Pago',
+        'POINT': 'Tarjeta Posnet (POINT)'
+    };
+    const payment = paymentNames[paymentRaw] || paymentRaw;
+
     const total = cart.reduce((a, c) => a + c.price * c.qty, 0);
     const orderId = `${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${String(Date.now()).slice(-6)}`;
 
@@ -465,7 +473,7 @@ function submitOrder(e) {
 
     msg += `🖨️ *Ver Comprobante:*\n${receiptUrl}`;
 
-    const shopNum = '543815692499';
+    const shopNum = '543813934389';
     window.open(`https://wa.me/${shopNum}?text=${encodeURIComponent(msg)}`, '_blank');
 }
 
@@ -488,14 +496,49 @@ function setupEvents() {
     document.getElementById('cust-delivery')?.addEventListener('change', e => {
         const isDelivery = e.target.value === 'delivery';
         const grp = document.getElementById('address-group');
+        const optPoint = document.getElementById('opt-point');
+        const paymentSelect = document.getElementById('cust-payment');
+
         grp.style.display = isDelivery ? 'block' : 'none';
+
         if (isDelivery) {
             document.getElementById('map').style.display = 'block';
             setTimeout(initMap, 300); // Give overlay time to render
+            // Hide and reset POINT if selected
+            if (paymentSelect.value === 'POINT') {
+                paymentSelect.value = 'EFECTIVO';
+                updatePaymentNote('EFECTIVO');
+            }
+            optPoint.disabled = true;
+            optPoint.style.display = 'none';
         } else {
             document.getElementById('map').style.display = 'none';
+            optPoint.disabled = false;
+            optPoint.style.display = 'block';
         }
     });
+
+    document.getElementById('cust-payment')?.addEventListener('change', e => {
+        updatePaymentNote(e.target.value);
+    });
+
+    function updatePaymentNote(method) {
+        const noteBox = document.getElementById('payment-note');
+        let text = '';
+
+        if (method === 'TRANSFERENCIA') {
+            text = 'ℹ️ <strong>Alias: XXXXXX </strong>| Se procesará el pedido una vez enviado el comprobante de la transferencia realizada vía WhatsApp.';
+        } else if (method === 'MERCADO_PAGO') {
+            text = 'ℹ️ <strong>El pedido se procesará una vez realizado el pago a través del enlace de pago</strong> y enviado el comprobante por WhatsApp.';
+        }
+
+        if (text) {
+            noteBox.innerHTML = text;
+            noteBox.style.display = 'block';
+        } else {
+            noteBox.style.display = 'none';
+        }
+    }
 
     // Phone: block non-numeric input
     document.getElementById('cust-phone')?.addEventListener('keypress', e => {
