@@ -1,17 +1,20 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bocado | Acceso Admin</title>
+    <title>Puro Sabor | Acceso Admin</title>
     <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/3075/3075977.png" type="image/png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
     <div class="login-wrapper">
         <div class="login-box">
-            <div class="brand-logo" style="margin:0 auto 16px;width:56px;height:56px;font-size:1.5rem;">B</div>
+            <img src="img/logo.jpg" alt="Puro Sabor" class="brand-logo"
+                style="margin:0 auto 20px; width:120px; height:auto; display:block;">
             <h2>Acceso al Panel</h2>
             <form id="login-form">
                 <div class="form-group" style="text-align:left;">
@@ -25,7 +28,9 @@
                 <p id="error-msg" class="error-msg">Usuario o contraseña incorrectos.</p>
                 <button type="submit" class="btn-save" style="margin-top:16px;">INGRESAR</button>
             </form>
-            <a href="index.html" style="display:block;margin-top:20px;color:var(--text-muted);font-size:0.8rem;text-decoration:none;">← Volver al Menú</a>
+            <a href="index.html"
+                style="display:block;margin-top:20px;color:var(--text-muted);font-size:0.8rem;text-decoration:none;">←
+                Volver al Menú</a>
         </div>
     </div>
     <script>
@@ -33,7 +38,7 @@
             e.preventDefault();
             const u = document.getElementById('user').value;
             const p = document.getElementById('pass').value;
-            if (u === 'admin' && p === 'bocado2026') {
+            if (u === 'operador' && p === 'com026') {
                 sessionStorage.setItem('bocado_auth', 'true');
                 window.location.href = 'admin.html';
             } else {
@@ -42,4 +47,5 @@
         };
     </script>
 </body>
+
 </html>

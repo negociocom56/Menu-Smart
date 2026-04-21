@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin | Bocado</title>
+    <title>Admin | Puro Sabor</title>
     <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/3075/3075977.png" type="image/png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="style.css">
@@ -16,10 +16,10 @@
     <header class="app-header">
         <div class="container" style="display:flex;justify-content:space-between;align-items:center;">
             <div class="brand">
-                <div class="brand-logo">A</div>
+                <img src="img/logo.jpg" alt="Logo" class="brand-logo">
                 <div class="brand-text">
                     <h1>Panel Admin</h1>
-                    <span>Gestión de Bocado</span>
+                    <span>Gestión de Puro Sabor Menú</span>
                 </div>
             </div>
             <div style="display:flex;gap:8px;">
@@ -143,11 +143,11 @@
         // ===================================================
         // CONFIGURACIÓN MAESTRA (Sólo para Synergy Dev)
         // ===================================================
-        const cloudUrl = 'https://script.google.com/macros/s/AKfycbxeo8pT8_Zo0zPbchpSYinMBWokiwH-ZhScZNQFwz7Amt08IRtHuRmsA1eV8Xkc2bK7/exec'; 
+        const cloudUrl = 'https://script.google.com/macros/s/AKfycbxeo8pT8_Zo0zPbchpSYinMBWokiwH-ZhScZNQFwz7Amt08IRtHuRmsA1eV8Xkc2bK7/exec';
         // ===================================================
 
         let products = JSON.parse(localStorage.getItem('bocado_products')) || [];
-        let banners  = JSON.parse(localStorage.getItem('bocado_banners'))  || [];
+        let banners = JSON.parse(localStorage.getItem('bocado_banners')) || [];
 
         async function syncFromCloud() {
             if (!cloudUrl) return;
@@ -181,11 +181,11 @@
                 // pero lo ideal es intentar fetch normal primero.
                 await fetch(cloudUrl, {
                     method: 'POST',
-                    mode: 'no-cors', 
+                    mode: 'no-cors',
                     body: JSON.stringify({ action, payload })
                 });
                 // Apps Script no permite leer la respuesta con no-cors, así que asumimos éxito y resincronizamos en 2 seg
-                setTimeout(syncFromCloud, 2000); 
+                setTimeout(syncFromCloud, 2000);
             } catch (e) {
                 console.error("Error en cloudSave:", e);
                 toast("Error de conexión ❌");
@@ -204,7 +204,7 @@
                     <img src="${p.img}" alt="" onerror="this.src='https://placehold.co/50x50/f3eeea/a89e96?text=?'">
                     <div class="info">
                         <h4>${p.name}</h4>
-                        <div class="meta-text">${p.category} · ${p.desc?.substring(0,35) || ''}...</div>
+                        <div class="meta-text">${p.category} · ${p.desc?.substring(0, 35) || ''}...</div>
                     </div>
                     <span class="price-tag">$${p.price.toLocaleString('es-AR')}</span>
                     <div class="actions">
@@ -278,7 +278,7 @@
             document.getElementById('p-desc').value = p.desc;
             document.getElementById('product-form-title').innerHTML = '<i class="fas fa-edit"></i> Editando: ' + p.name;
             document.getElementById('p-cancel').style.display = 'block';
-            window.scrollTo({top: document.getElementById('product-form').offsetTop - 100, behavior: 'smooth'});
+            window.scrollTo({ top: document.getElementById('product-form').offsetTop - 100, behavior: 'smooth' });
         };
 
         window.deleteProduct = async (id) => {
@@ -325,7 +325,7 @@
             document.getElementById('b-color').value = b.color;
             document.getElementById('banner-form-title').innerHTML = '<i class="fas fa-edit"></i> Editando promo';
             document.getElementById('b-cancel').style.display = 'block';
-            window.scrollTo({top: 0, behavior: 'smooth'});
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         };
 
         window.deleteBanner = async (id) => {

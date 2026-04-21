@@ -431,7 +431,7 @@ function submitOrder(e) {
     const orderId = `${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${String(Date.now()).slice(-6)}`;
 
     // Build message with plain text symbols (no emojis to ensure compatibility)
-    let msg = `=== *Pedido Bocado* ===\n\n`;
+    let msg = `=== *Pedido Puro Sabor* ===\n\n`;
     cart.forEach(item => {
         msg += `${item.name.toUpperCase()} x${item.qty} - $${(item.price * item.qty).toLocaleString('es-AR')}`;
         if (item.note) msg += ` _(${item.note})_`;
