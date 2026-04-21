@@ -82,7 +82,7 @@
         <div class="header">
             <img src="img/logo.jpg" alt="Puro Sabor" style="height: 60px; margin-bottom: 10px;">
             <div class="tagline">Smart Menu & Delivery</div>
-            <div class="order-code" id="order-code">CARGANDO...</div>
+
         </div>
 
         <div class="items" id="items-list">
@@ -149,7 +149,7 @@
 
         function renderOrder(data) {
             // Order ID
-            document.getElementById('order-code').innerText = `PEDIDO: ${data.id}`;
+
 
             // Items
             const itemsEl = document.getElementById('items-list');

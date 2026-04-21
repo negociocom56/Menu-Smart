@@ -445,8 +445,7 @@ function submitOrder(e) {
     if (delivery === 'delivery') {
         msg += `>> Mapa: https://maps.google.com/?q=${currentLat},${currentLng}\n`;
     }
-    msg += `>> Forma de pago: ${payment}\n`;
-    msg += `>> Pedido: ${orderId}\n\n`;
+    msg += `>> Forma de pago: ${payment}\n\n`;
 
     // Receipt data (Optimized for length with aliases)
     const receiptPayload = {

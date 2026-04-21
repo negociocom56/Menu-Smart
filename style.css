@@ -467,6 +467,58 @@ body {
     color: var(--text-muted);
 }
 
+/* ========== MENU ALERT ========== */
+.menu-alert {
+    background: var(--brand-bg);
+    border: 1px solid var(--border);
+    border-left: 5px solid var(--brand);
+    border-radius: var(--radius-md);
+    padding: 20px;
+    margin: 8px 0 24px;
+    display: flex;
+    gap: 16px;
+    box-shadow: var(--shadow-sm);
+    animation: fadeIn 0.5s ease-out;
+}
+
+.alert-icon {
+    font-size: 1.8rem;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+}
+
+.alert-body h3 {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: var(--brand);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.alert-body p {
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    line-height: 1.6;
+    margin-bottom: 8px;
+}
+
+.alert-hint {
+    font-size: 0.75rem;
+    color: var(--brand);
+    background: #ffffff;
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
 /* ========== CART FLOAT ========== */
 .cart-float {
     position: fixed;
