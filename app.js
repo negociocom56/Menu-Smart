@@ -211,6 +211,7 @@ function renderProducts() {
         const finalImgUrl = getDirectImageUrl(p.img); // Google Drive Fix
         return `
         <div class="product-card" id="card-${p.id}">
+            <span class="cat-badge">${p.category}</span>
             <img src="${finalImgUrl}" alt="${p.name}" class="card-img" onerror="this.src='https://placehold.co/600x400/f3eeea/a89e96?text=${encodeURIComponent(p.name)}'">
             <div class="card-body">
                 <h3>${p.name}</h3>
@@ -454,24 +455,7 @@ function submitOrder(e) {
         msg += `>> Mapa: https://maps.google.com/?q=${currentLat},${currentLng}\n`;
     }
     msg += `>> Forma de pago: ${payment}\n\n`;
-
-    // Receipt data (Optimized for length with aliases)
-    const receiptPayload = {
-        i: orderId, // id
-        n: name,    // name
-        p: phone,   // phone
-        t: total,   // total
-        m: payment, // payment method
-        d: delivery,// delivery type
-        a: delivery === 'delivery' ? address : 'Paso a Retirar', // address
-        it: cart.map(c => ({ n: c.name, q: c.qty, p: c.price, o: c.note || '' })) // items (note alias 'o')
-    };
-
-    const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(receiptPayload))));
-    const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
-    const receiptUrl = `${baseUrl}receipt.html?data=${b64}`;
-
-    msg += `🖨️ *Ver Comprobante:*\n${receiptUrl}`;
+    msg += `✅ *Pedido confirmado. ¡Muchas gracias!*`;
 
     const shopNum = '543813934389';
     window.open(`https://wa.me/${shopNum}?text=${encodeURIComponent(msg)}`, '_blank');
