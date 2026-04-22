@@ -31,6 +31,7 @@ const SEED_BANNERS = [
 // ---- 3. STATE ----
 let products = JSON.parse(localStorage.getItem('bocado_products')) || SEED_PRODUCTS;
 let banners = JSON.parse(localStorage.getItem('bocado_banners')) || SEED_BANNERS;
+let schedules = JSON.parse(localStorage.getItem('bocado_schedules')) || [];
 let cart = [];
 let currentCat = 'Todo';
 let searchQuery = '';
@@ -45,7 +46,7 @@ let currentLng = -65.203794;
 // ===================================================
 // CONFIGURACIÓN MAESTRA (Sólo para Synergy Dev)
 // ===================================================
-const CLOUD_URL = 'https://script.google.com/macros/s/AKfycbxeo8pT8_Zo0zPbchpSYinMBWokiwH-ZhScZNQFwz7Amt08IRtHuRmsA1eV8Xkc2bK7/exec'; // Pega aquí tu URL de Google Apps Script (terminada en /exec)
+const CLOUD_URL = 'https://script.google.com/macros/s/AKfycbwVXPXZGGMozf2E213UnxdmlBwr9TSX2cmkCxMXgpZpO9zNo6DrWYzd7-5MM050jOyJ/exec'; // Pega aquí tu URL de Google Apps Script (terminada en /exec)
 // ===================================================
 
 // ---- 4. INIT ----
@@ -73,6 +74,10 @@ async function syncFromCloud() {
         if (data.banners) {
             banners = data.banners;
             localStorage.setItem('bocado_banners', JSON.stringify(banners));
+        }
+        if (data.schedules) {
+            schedules = data.schedules;
+            localStorage.setItem('bocado_schedules', JSON.stringify(schedules));
         }
         renderBanners();
         renderCategories();
@@ -207,28 +212,38 @@ function renderProducts() {
     }
 
     grid.innerHTML = list.map(p => {
-        const inCart = cart.find(c => c.id === p.id);
+        const inCart = cart.find(c => String(c.id) === String(p.id));
         const finalImgUrl = getDirectImageUrl(p.img); // Google Drive Fix
+        const isInactive = p.active === false || String(p.active).toUpperCase() === 'FALSE' || String(p.active).toUpperCase() === 'FALSO';
+        const isActive = !isInactive;
+
+        let actionHtml = '';
+        if (!isActive) {
+            actionHtml = `<button class="btn-add" style="width:auto;padding:0 16px;background:var(--text-muted);cursor:not-allowed;" disabled>AGOTADO</button>`;
+        } else if (inCart) {
+            actionHtml = `
+                <div class="qty-control">
+                    <button onclick="changeQty(${p.id},-1)"><i class="fas fa-minus"></i></button>
+                    <span>${inCart.qty}</span>
+                    <button onclick="changeQty(${p.id},1)"><i class="fas fa-plus"></i></button>
+                </div>
+            `;
+        } else {
+            actionHtml = `<button class="btn-add" onclick="addItem(${p.id})"><i class="fas fa-plus"></i></button>`;
+        }
+
         return `
-        <div class="product-card" id="card-${p.id}">
-            <span class="cat-badge">${p.category}</span>
-            <img src="${finalImgUrl}" alt="${p.name}" class="card-img" onerror="this.src='https://placehold.co/600x400/f3eeea/a89e96?text=${encodeURIComponent(p.name)}'">
+        <div class="product-card" id="card-${p.id}" style="${!isActive ? 'opacity:0.6;' : ''}">
+            <span class="cat-badge" style="${!isActive ? 'background:var(--text-muted);' : ''}">${!isActive ? 'AGOTADO' : p.category}</span>
+            <img src="${finalImgUrl}" alt="${p.name}" class="card-img" style="${!isActive ? 'filter:grayscale(1);' : ''}" onerror="this.src='https://placehold.co/600x400/f3eeea/a89e96?text=${encodeURIComponent(p.name)}'">
             <div class="card-body">
                 <h3>${p.name}</h3>
                 <p class="desc">${p.desc}</p>
                 <div class="card-footer">
-                    <span class="card-price">$${p.price.toLocaleString('es-AR')}</span>
-                    ${inCart ? `
-                        <div class="qty-control">
-                            <button onclick="changeQty(${p.id},-1)"><i class="fas fa-minus"></i></button>
-                            <span>${inCart.qty}</span>
-                            <button onclick="changeQty(${p.id},1)"><i class="fas fa-plus"></i></button>
-                        </div>
-                    ` : `
-                        <button class="btn-add" onclick="addItem(${p.id})"><i class="fas fa-plus"></i></button>
-                    `}
+                    <span class="card-price" style="${!isActive ? 'color:var(--text-muted);' : ''}">$${p.price.toLocaleString('es-AR')}</span>
+                    ${actionHtml}
                 </div>
-                ${inCart ? `
+                ${inCart && isActive ? `
                     <input type="text" class="note-input" placeholder="✏️ Aclaración (ej: sin picante)" 
                            value="${inCart.note || ''}" 
                            oninput="updateNote(${p.id}, this.value)">
@@ -240,7 +255,7 @@ function renderProducts() {
 
 // ---- 8. CART LOGIC ----
 function addItem(id) {
-    const p = products.find(x => x.id === id);
+    const p = products.find(x => String(x.id) === String(id));
     if (!p) return;
     cart.push({ ...p, qty: 1, note: '' });
     toast(`${p.name} agregado ✓`);
@@ -248,18 +263,18 @@ function addItem(id) {
 }
 
 function changeQty(id, delta) {
-    const item = cart.find(c => c.id === id);
+    const item = cart.find(c => String(c.id) === String(id));
     if (!item) return;
     item.qty += delta;
     if (item.qty <= 0) {
-        cart = cart.filter(c => c.id !== id);
+        cart = cart.filter(c => String(c.id) !== String(id));
         toast('Producto removido');
     }
     refresh();
 }
 
 function updateNote(id, text) {
-    const item = cart.find(c => c.id === id);
+    const item = cart.find(c => String(c.id) === String(id));
     if (item) item.note = text;
 }
 
@@ -285,8 +300,30 @@ function refresh() {
 
 // ---- 9. CHECKOUT ----
 function openCheckout() {
+    // === CIERRE AUTOMÁTICO (Hora Argentina) ===
+    const now = new Date();
+    const argTimeStr = now.toLocaleString('en-US', { timeZone: 'America/Argentina/Buenos_Aires' });
+    const argDate = new Date(argTimeStr); // Parse as local to extract hours/minutes
+
+    if (argDate.getHours() < 10 || argDate.getHours() > 15 || (argDate.getHours() === 15 && argDate.getMinutes() >= 30)) {
+        toast('El local se encuentra cerrado. (Abre a las 10:00)');
+        return;
+    }
+
     const ov = document.getElementById('checkout-overlay');
     ov.classList.add('open');
+
+    // Populate Schedules
+    const timeSelect = document.getElementById('cust-time');
+    if (timeSelect) {
+        const activeSchedules = schedules.filter(s => s.active !== false);
+        if (activeSchedules.length > 0) {
+            timeSelect.innerHTML = '<option value="">Seleccioná un horario...</option>' +
+                activeSchedules.map(s => `<option value="${s.time}">${s.time}</option>`).join('');
+        } else {
+            timeSelect.innerHTML = '<option value="">Sin horarios disponibles hoy</option>';
+        }
+    }
 
     const total = cart.reduce((a, c) => a + c.price * c.qty, 0);
     document.getElementById('checkout-total').innerText = total.toLocaleString('es-AR');
@@ -310,7 +347,16 @@ function validateForm() {
     const phone = document.getElementById('cust-phone');
     const delivery = document.getElementById('cust-delivery').value;
     const addr = document.getElementById('cust-address');
+    const time = document.getElementById('cust-time');
     let ok = true;
+
+    // Time
+    if (time && time.value === '') {
+        time.style.borderColor = '#e74c3c';
+        ok = false;
+    } else if (time) {
+        time.style.borderColor = '';
+    }
 
     // Name
     if (name.value.trim().length < 3) {
@@ -427,6 +473,7 @@ function submitOrder(e) {
     const phone = document.getElementById('cust-phone').value.trim();
     const delivery = document.getElementById('cust-delivery').value;
     const address = document.getElementById('cust-address')?.value?.trim() || '';
+    const timeRaw = document.getElementById('cust-time')?.value || '';
     const paymentRaw = document.getElementById('cust-payment').value;
     const paymentNames = {
         'EFECTIVO': 'Efectivo',
@@ -450,6 +497,7 @@ function submitOrder(e) {
     msg += `💰 *Total: $${total.toLocaleString('es-AR')}* $$$\n\n`;
     msg += `👤 Nombre: ${name}\n`;
     msg += `📞 Teléfono: ${phone}\n`;
+    msg += `🕒 Horario: ${timeRaw}\n`;
     msg += `📍 Dirección: ${delivery === 'delivery' ? address : 'Paso a Retirar'}\n`;
     if (delivery === 'delivery') {
         msg += `>> Mapa: https://maps.google.com/?q=${currentLat},${currentLng}\n`;

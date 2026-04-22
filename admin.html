@@ -91,6 +91,24 @@
 
         <hr style="border:none;border-top:1px solid var(--border);margin:32px 0;">
 
+        <!-- ===== SCHEDULES SECTION ===== -->
+        <section>
+            <h3 style="font-size:1rem;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px;"><i
+                    class="fas fa-clock" style="color:var(--brand);"></i> Horarios de Entrega</h3>
+            <div class="admin-form-card" style="padding:16px;">
+                <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:16px;">
+                    Apaga un horario si la cocina ya no puede tomar más pedidos para esa franja. Los cambios se guardan
+                    automáticamente.
+                </p>
+                <div id="schedule-list"
+                    style="display:grid;grid-template-columns:repeat(auto-fill, minmax(140px, 1fr));gap:12px;">
+                    <!-- Filled by JS -->
+                </div>
+            </div>
+        </section>
+
+        <hr style="border:none;border-top:1px solid var(--border);margin:32px 0;">
+
         <!-- ===== PRODUCTS SECTION ===== -->
         <section>
             <h3 style="font-size:1rem;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px;"><i
@@ -112,10 +130,10 @@
                         <div class="form-group">
                             <label>CATEGORÍA</label>
                             <select id="p-category">
-                                <option value="Empanadas">Empanadas</option>
-                                <option value="Pizzas">Pizzas</option>
-                                <option value="Bebidas">Bebidas</option>
-                                <option value="Promos">Promos</option>
+                                <option value="Menú Trabajador">Menú Trabajador</option>
+                                <option value="Menú Habitual">Menú Habitual</option>
+                                <option value="Platos Principales">Platos Principales</option>
+                                <option value="Combos">Combos</option>
                             </select>
                         </div>
                     </div>
@@ -126,6 +144,14 @@
                     <div class="form-group">
                         <label>DESCRIPCIÓN</label>
                         <textarea id="p-desc" rows="2" placeholder="Ingredientes, tamaño..."></textarea>
+                    </div>
+                    <div class="form-group"
+                        style="display:flex;align-items:center;gap:10px;margin-bottom:16px;background:var(--bg-muted);padding:12px;border-radius:8px;">
+                        <label style="margin:0;flex:1;">¿ESTÁ DISPONIBLE?</label>
+                        <input type="checkbox" id="p-active" checked
+                            style="width:24px;height:24px;accent-color:var(--success);cursor:pointer;">
+                        <span style="font-size:0.85rem;color:var(--text-secondary);" id="p-active-lbl">Sí, a la
+                            venta</span>
                     </div>
                     <button type="submit" class="btn-save">Guardar Producto</button>
                     <button type="button" id="p-cancel" class="btn-cancel">Cancelar</button>
@@ -143,11 +169,13 @@
         // ===================================================
         // CONFIGURACIÓN MAESTRA (Sólo para Synergy Dev)
         // ===================================================
-        const cloudUrl = 'https://script.google.com/macros/s/AKfycbxeo8pT8_Zo0zPbchpSYinMBWokiwH-ZhScZNQFwz7Amt08IRtHuRmsA1eV8Xkc2bK7/exec';
+        const cloudUrl = 'https://script.google.com/macros/s/AKfycbwVXPXZGGMozf2E213UnxdmlBwr9TSX2cmkCxMXgpZpO9zNo6DrWYzd7-5MM050jOyJ/exec';
         // ===================================================
 
+        localStorage.removeItem('bocado_schedules'); // FLUSH CORRUPT DATES
         let products = JSON.parse(localStorage.getItem('bocado_products')) || [];
         let banners = JSON.parse(localStorage.getItem('bocado_banners')) || [];
+        let schedules = [];
 
         async function syncFromCloud() {
             if (!cloudUrl) return;
@@ -164,8 +192,13 @@
                     banners = data.banners;
                     localStorage.setItem('bocado_banners', JSON.stringify(banners));
                 }
+                if (data.schedules && data.schedules.length > 0) {
+                    schedules = data.schedules;
+                    localStorage.setItem('bocado_schedules', JSON.stringify(schedules));
+                }
                 renderProducts();
                 renderBanners();
+                renderSchedules();
                 toast("Nube actualizada ✓");
             } catch (e) {
                 console.error("Error en syncFromCloud:", e);
@@ -199,20 +232,57 @@
                 el.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:30px;">Sin productos aún.</p>';
                 return;
             }
-            el.innerHTML = products.map(p => `
-                <div class="admin-product-row">
+            el.innerHTML = products.map(p => {
+                const isInactive = p.active === false || String(p.active).toUpperCase() === 'FALSE' || String(p.active).toUpperCase() === 'FALSO';
+                const isActive = !isInactive;
+                const statusBadge = isActive ? '' : '<span style="background:#e74c3c;color:white;padding:2px 8px;border-radius:12px;font-size:0.65rem;font-weight:bold;margin-left:8px;vertical-align:middle;">AGOTADO</span>';
+                return `
+                <div class="admin-product-row" style="${!isActive ? 'opacity:0.6;' : ''}">
                     <img src="${p.img}" alt="" onerror="this.src='https://placehold.co/50x50/f3eeea/a89e96?text=?'">
                     <div class="info">
-                        <h4>${p.name}</h4>
+                        <h4>${p.name} ${statusBadge}</h4>
                         <div class="meta-text">${p.category} · ${p.desc?.substring(0, 35) || ''}...</div>
                     </div>
                     <span class="price-tag">$${p.price.toLocaleString('es-AR')}</span>
                     <div class="actions">
-                        <button class="btn-edit" onclick="editProduct(${p.id})" title="Editar"><i class="fas fa-pen"></i></button>
-                        <button class="btn-del" onclick="deleteProduct(${p.id})" title="Eliminar"><i class="fas fa-trash"></i></button>
+                        <button class="btn-edit" onclick="editProduct('${p.id}')" title="Editar"><i class="fas fa-pen"></i></button>
+                        <button class="btn-del" onclick="deleteProduct('${p.id}')" title="Eliminar"><i class="fas fa-trash"></i></button>
                     </div>
                 </div>
-            `).join('');
+            `}).join('');
+        }
+
+        // --- Render Schedules ---
+        function renderSchedules() {
+            const el = document.getElementById('schedule-list');
+            if (schedules.length === 0) {
+                el.innerHTML = '<p style="color:var(--text-muted);grid-column:1/-1;">No hay horarios cargados. Espera la sincronización.</p>';
+                return;
+            }
+            el.innerHTML = schedules.map(s => {
+                const bg = s.active ? 'var(--brand)' : 'var(--bg-surface)';
+                const border = s.active ? 'var(--brand)' : 'var(--border)';
+                const color = s.active ? '#fff' : 'var(--text-muted)';
+                const iconColor = s.active ? 'var(--brand)' : 'transparent';
+                const iconBg = s.active ? '#fff' : 'transparent';
+                return `
+                <div style="background:${bg}; border:2px solid ${border}; border-radius:12px; padding:16px; display:flex; align-items:center; justify-content:space-between; cursor:pointer; transition:all 0.2s; box-shadow:var(--shadow-sm);" onclick="toggleSchedule('${s.id}', ${!s.active})">
+                    <span style="font-weight:800; font-size:1.1rem; color:${color}; pointer-events:none; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:70%;">${s.time}</span>
+                    <div style="width:26px; height:26px; flex-shrink:0; border-radius:50%; background:${iconBg}; border:2px solid ${s.active ? '#fff' : 'var(--border)'}; display:flex; align-items:center; justify-content:center; pointer-events:none;">
+                        ${s.active ? '<i class="fas fa-check" style="color:var(--brand); font-size:0.8rem;"></i>' : ''}
+                    </div>
+                </div>
+            `}).join('');
+        }
+
+        async function toggleSchedule(id, active) {
+            const s = schedules.find(x => String(x.id) === String(id));
+            if (s) {
+                s.active = active;
+                localStorage.setItem('bocado_schedules', JSON.stringify(schedules));
+                renderSchedules();
+                await cloudSave('saveSchedules', schedules);
+            }
         }
 
         // --- Render Banners ---
@@ -230,8 +300,8 @@
                         <p>${b.subtitle || ''}</p>
                     </div>
                     <div style="display:flex;gap:6px;">
-                        <button onclick="editBanner(${b.id})" style="background:var(--bg-muted);border:none;width:32px;height:32px;border-radius:8px;cursor:pointer;color:var(--text-muted);"><i class="fas fa-pen"></i></button>
-                        <button onclick="deleteBanner(${b.id})" style="background:#fde8e8;border:none;width:32px;height:32px;border-radius:8px;cursor:pointer;color:#e74c3c;"><i class="fas fa-trash"></i></button>
+                        <button onclick="editBanner('${b.id}')" style="background:var(--bg-muted);border:none;width:32px;height:32px;border-radius:8px;cursor:pointer;color:var(--text-muted);"><i class="fas fa-pen"></i></button>
+                        <button onclick="deleteBanner('${b.id}')" style="background:#fde8e8;border:none;width:32px;height:32px;border-radius:8px;cursor:pointer;color:#e74c3c;"><i class="fas fa-trash"></i></button>
                     </div>
                 </div>
             `).join('');
@@ -251,15 +321,16 @@
             e.preventDefault();
             const editId = document.getElementById('p-edit-id').value;
             const prod = {
-                id: editId ? parseInt(editId) : Date.now(),
+                id: editId ? editId : String(Date.now()),
                 name: document.getElementById('p-name').value,
                 price: parseFloat(document.getElementById('p-price').value),
                 category: document.getElementById('p-category').value,
                 img: parseImageUrl(document.getElementById('p-img').value),
-                desc: document.getElementById('p-desc').value
+                desc: document.getElementById('p-desc').value,
+                active: document.getElementById('p-active').checked
             };
             if (editId) {
-                products = products.map(p => p.id === parseInt(editId) ? prod : p);
+                products = products.map(p => String(p.id) === String(editId) ? prod : p);
             } else {
                 products.push(prod);
             }
@@ -269,13 +340,17 @@
         };
 
         window.editProduct = (id) => {
-            const p = products.find(x => x.id === id);
+            const p = products.find(x => String(x.id) === String(id));
             document.getElementById('p-edit-id').value = p.id;
             document.getElementById('p-name').value = p.name;
             document.getElementById('p-price').value = p.price;
             document.getElementById('p-category').value = p.category;
             document.getElementById('p-img').value = p.img;
             document.getElementById('p-desc').value = p.desc;
+            const isInactive = p.active === false || String(p.active).toUpperCase() === 'FALSE' || String(p.active).toUpperCase() === 'FALSO';
+            const isActive = !isInactive;
+            document.getElementById('p-active').checked = isActive;
+            document.getElementById('p-active-lbl').innerText = isActive ? 'Sí, a la venta' : 'No (Agotado)';
             document.getElementById('product-form-title').innerHTML = '<i class="fas fa-edit"></i> Editando: ' + p.name;
             document.getElementById('p-cancel').style.display = 'block';
             window.scrollTo({ top: document.getElementById('product-form').offsetTop - 100, behavior: 'smooth' });
@@ -283,7 +358,7 @@
 
         window.deleteProduct = async (id) => {
             if (!confirm('¿Eliminar este producto?')) return;
-            products = products.filter(p => p.id !== id);
+            products = products.filter(p => String(p.id) !== String(id));
             localStorage.setItem('bocado_products', JSON.stringify(products));
             renderProducts();
             await cloudSave('saveProducts', products);
@@ -292,23 +367,28 @@
         function resetProductForm() {
             document.getElementById('p-edit-id').value = '';
             document.getElementById('product-form').reset();
+            document.getElementById('p-active').checked = true;
+            document.getElementById('p-active-lbl').innerText = 'Sí, a la venta';
             document.getElementById('product-form-title').innerHTML = '<i class="fas fa-plus-circle"></i> Agregar Producto';
             document.getElementById('p-cancel').style.display = 'none';
         }
         document.getElementById('p-cancel').onclick = resetProductForm;
+        document.getElementById('p-active').onchange = (e) => {
+            document.getElementById('p-active-lbl').innerText = e.target.checked ? 'Sí, a la venta' : 'No (Agotado)';
+        };
 
         // --- Banner CRUD ---
         document.getElementById('banner-form').onsubmit = async (e) => {
             e.preventDefault();
             const editId = document.getElementById('b-edit-id').value;
             const banner = {
-                id: editId ? parseInt(editId) : Date.now(),
+                id: editId ? editId : String(Date.now()),
                 title: document.getElementById('b-title').value,
                 subtitle: document.getElementById('b-subtitle').value,
                 color: document.getElementById('b-color').value,
             };
             if (editId) {
-                banners = banners.map(b => b.id === parseInt(editId) ? banner : b);
+                banners = banners.map(b => String(b.id) === String(editId) ? banner : b);
             } else {
                 banners.push(banner);
             }
@@ -318,7 +398,7 @@
         };
 
         window.editBanner = (id) => {
-            const b = banners.find(x => x.id === id);
+            const b = banners.find(x => String(x.id) === String(id));
             document.getElementById('b-edit-id').value = b.id;
             document.getElementById('b-title').value = b.title;
             document.getElementById('b-subtitle').value = b.subtitle;
@@ -330,7 +410,7 @@
 
         window.deleteBanner = async (id) => {
             if (!confirm('¿Eliminar esta promo?')) return;
-            banners = banners.filter(b => b.id !== id);
+            banners = banners.filter(b => String(b.id) !== String(id));
             localStorage.setItem('bocado_banners', JSON.stringify(banners));
             renderBanners();
             await cloudSave('saveBanners', banners);
@@ -355,6 +435,7 @@
         // --- Init ---
         renderProducts();
         renderBanners();
+        renderSchedules();
         syncFromCloud();
     </script>
 </body>
