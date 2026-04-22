@@ -447,15 +447,15 @@ function submitOrder(e) {
         msg += `\n`;
     });
 
-    msg += `$$$ *Total: $${total.toLocaleString('es-AR')}* $$$\n\n`;
-    msg += `>> Nombre: ${name}\n`;
-    msg += `>> Teléfono: ${phone}\n`;
-    msg += `>> Dirección: ${delivery === 'delivery' ? address : 'Paso a Retirar'}\n`;
+    msg += `💰 *Total: $${total.toLocaleString('es-AR')}* $$$\n\n`;
+    msg += `👤 Nombre: ${name}\n`;
+    msg += `📞 Teléfono: ${phone}\n`;
+    msg += `📍 Dirección: ${delivery === 'delivery' ? address : 'Paso a Retirar'}\n`;
     if (delivery === 'delivery') {
         msg += `>> Mapa: https://maps.google.com/?q=${currentLat},${currentLng}\n`;
     }
-    msg += `>> Forma de pago: ${payment}\n\n`;
-    msg += `✅ *Pedido confirmado. ¡Muchas gracias!*`;
+    msg += `📱 Forma de pago: ${payment}\n\n`;
+    msg += `✅ *Pedido Solicitado. ¡Muchas gracias!*`;
 
     const shopNum = '543813934389';
     window.open(`https://wa.me/${shopNum}?text=${encodeURIComponent(msg)}`, '_blank');
