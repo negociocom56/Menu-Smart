@@ -3,29 +3,13 @@
 // =============================================
 
 // ---- 1. SEED DATA: Products ----
-const SEED_PRODUCTS = [
-    { id: 1, name: 'Empanada de Carne', price: 1450, category: 'Empanadas', img: 'https://images.unsplash.com/photo-1601924287811-e34de5d17476?w=600&h=400&fit=crop', desc: 'Carne cortada a cuchillo, jugosa y especiada.' },
-    { id: 2, name: 'Empanada de Pollo', price: 1450, category: 'Empanadas', img: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=600&h=400&fit=crop', desc: 'Pollo desmenuzado con cebolla de verdeo.' },
-    { id: 3, name: 'Empanada de Humita', price: 1450, category: 'Empanadas', img: 'https://images.unsplash.com/photo-1609525313344-a56b96f0efc8?w=600&h=400&fit=crop', desc: 'Choclo cremoso y queso, la favorita del NOA.' },
-    { id: 4, name: 'Empanada de Jamón y Queso', price: 1450, category: 'Empanadas', img: 'https://images.unsplash.com/photo-1619221882220-947b3d3c8861?w=600&h=400&fit=crop', desc: 'Jamón cocido con mozzarella derretida.' },
-    { id: 5, name: 'Empanada Árabe (Sfiha)', price: 1600, category: 'Empanadas', img: 'https://images.unsplash.com/photo-1562059390-a761a084768e?w=600&h=400&fit=crop', desc: 'Carne especiada con limón, receta libanesa.' },
-    { id: 6, name: 'Empanada de Verdura', price: 1350, category: 'Empanadas', img: 'https://images.unsplash.com/photo-1645696996945-3254a0d35920?w=600&h=400&fit=crop', desc: 'Espinaca, cebolla y huevo duro.' },
-    { id: 7, name: 'Pizza Muzzarella', price: 7500, category: 'Pizzas', img: 'https://images.unsplash.com/photo-1574071318508-1cdbad80ad38?w=600&h=400&fit=crop', desc: 'Doble muzzarella con aceitunas verdes.' },
-    { id: 8, name: 'Pizza Napolitana', price: 8500, category: 'Pizzas', img: 'https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?w=600&h=400&fit=crop', desc: 'Rodajas de tomate, ajo y albahaca fresca.' },
-    { id: 9, name: 'Pizza Fugazzeta', price: 8000, category: 'Pizzas', img: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=600&h=400&fit=crop', desc: 'Cebolla caramelizada abundante con muzzarella.' },
-    { id: 10, name: 'Pizza Calabresa', price: 8500, category: 'Pizzas', img: 'https://images.unsplash.com/photo-1534308983496-4fabb1a015ee?w=600&h=400&fit=crop', desc: 'Longaniza calabresa picante con morrones.' },
-    { id: 11, name: 'Coca-Cola 1.5L', price: 2500, category: 'Bebidas', img: 'https://images.unsplash.com/photo-1629203851122-3726ecdf080e?w=600&h=400&fit=crop', desc: 'La clásica, bien helada.' },
-    { id: 12, name: 'Sprite 1.5L', price: 2500, category: 'Bebidas', img: 'https://images.unsplash.com/photo-1625772299848-391b6a87d7b3?w=600&h=400&fit=crop', desc: 'Lima-limón refrescante.' },
-    { id: 13, name: 'Agua Mineral 500ml', price: 1200, category: 'Bebidas', img: 'https://images.unsplash.com/photo-1564419320461-6eb9039cfa3e?w=600&h=400&fit=crop', desc: 'Sin gas, ideal para acompañar.' },
-    { id: 14, name: 'Cerveza Quilmes 1L', price: 3500, category: 'Bebidas', img: 'https://images.unsplash.com/photo-1535958636474-b021ee887b13?w=600&h=400&fit=crop', desc: 'Retornable, bien fría.' },
-    { id: 15, name: 'Fainá', price: 3500, category: 'Pizzas', img: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=600&h=400&fit=crop', desc: 'Harina de garbanzo crocante, el clásico acompañante.' },
+export const SEED_PRODUCTS = [
+    // ... tus productos
 ];
 
 // ---- 2. SEED DATA: Promo Banners ----
-const SEED_BANNERS = [
-    { id: 1, title: '🔥 HOY: Docena de Empanadas', subtitle: 'Llevá 12 y pagá 10. ¡Solo por hoy!', color: '#1a1311' },
-    { id: 2, title: '🍕 Pizza + Fainá', subtitle: 'El combo clásico argentino a precio especial.', color: '#2d1f18' },
-    { id: 3, title: '🛵 Envío GRATIS', subtitle: 'En pedidos mayores a $15.000 dentro del centro.', color: '#14281a' },
+export const SEED_BANNERS = [
+    // ... tus banners
 ];
 
 // ---- 3. STATE ----
