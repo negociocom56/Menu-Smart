@@ -111,74 +111,85 @@
 
         <!-- ===== PRODUCTS SECTION ===== -->
         <section>
-            <h3 style="font-size:1rem;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px;"><i
-                    class="fas fa-utensils" style="color:var(--brand);"></i> Productos del Menú</h3>
+            <h3 style="font-size:1rem;font-weight:700;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;">
+                <span><i class="fas fa-utensils" style="color:var(--brand);"></i> Productos del Menú</span>
+            </h3>
 
-            <div class="admin-form-card">
-                <h3 id="product-form-title"><i class="fas fa-plus-circle"></i> Agregar Producto</h3>
-                <form id="product-form">
-                    <input type="hidden" id="p-edit-id">
-                    <div class="form-group">
-                        <label>NOMBRE</label>
-                        <input type="text" id="p-name" placeholder="Ej: Empanada de Carne" required>
-                    </div>
-                    <div class="form-row">
+            <!-- Botón flotante para móvil -->
+            <button class="floating-add-btn" onclick="openProductModal()" title="Agregar producto">
+                <i class="fas fa-plus"></i>
+            </button>
+
+            <!-- Modal para Agregar/Editar Producto -->
+            <div id="product-modal" class="modal-overlay">
+                <div class="modal-content">
+                    <button class="modal-close" onclick="closeProductModal()"><i class="fas fa-times"></i></button>
+                    <h3 id="product-form-title" style="margin-bottom:20px; color:var(--brand);">
+                        <i class="fas fa-plus-circle"></i> Agregar Producto
+                    </h3>
+                    <form id="product-form">
+                        <input type="hidden" id="p-edit-id">
                         <div class="form-group">
-                            <label>PRECIO ($)</label>
-                            <input type="number" id="p-price" placeholder="1450" required>
+                            <label>NOMBRE</label>
+                            <input type="text" id="p-name" placeholder="Ej: Empanada de Carne" required>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>PRECIO ($)</label>
+                                <input type="number" id="p-price" placeholder="1450" required>
+                            </div>
+                            <div class="form-group">
+                                <label>CATEGORÍA</label>
+                                <select id="p-category">
+                                    <option value="Menú Trabajador">Menú Trabajador</option>
+                                    <option value="Menú Habitual">Menú Habitual</option>
+                                    <option value="Platos Principales">Platos Principales</option>
+                                    <option value="Combos">Combos</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>URL IMAGEN</label>
+                                <input type="text" id="p-img" placeholder="https://images.unsplash.com/photo-...">
+                            </div>
+                            <div class="form-group">
+                                <label>STOCK</label>
+                                <input type="number" id="p-stock" value="100" min="0" required>
+                            </div>
                         </div>
                         <div class="form-group">
-                            <label>CATEGORÍA</label>
-                            <select id="p-category">
-                                <option value="Menú Trabajador">Menú Trabajador</option>
-                                <option value="Menú Habitual">Menú Habitual</option>
-                                <option value="Platos Principales">Platos Principales</option>
-                                <option value="Combos">Combos</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>URL IMAGEN</label>
-                            <input type="text" id="p-img" placeholder="https://images.unsplash.com/photo-...">
-                        </div>
-                        <div class="form-group" style="width:120px;">
-                            <label>STOCK</label>
-                            <input type="number" id="p-stock" value="100" min="0" required>
-                        </div>
-                        <div class="form-group" style="width:100px;">
-                            <label>ORDEN</label>
+                            <label>ORDEN EN EL MENÚ</label>
                             <input type="number" id="p-order" value="1" required>
                         </div>
-                    </div>
-                    <div class="form-group">
-                        <label>DESCRIPCIÓN</label>
-                        <textarea id="p-desc" rows="2" placeholder="Ingredientes, tamaño..."></textarea>
-                    </div>
-                    <div class="form-group"
-                        style="display:flex;align-items:center;gap:10px;margin-bottom:16px;background:var(--bg-muted);padding:12px;border-radius:8px;">
-                        <label style="margin:0;flex:1;">¿ESTÁ DISPONIBLE?</label>
-                        <input type="checkbox" id="p-active" checked
-                            style="width:24px;height:24px;accent-color:var(--success);cursor:pointer;">
-                        <span style="font-size:0.85rem;color:var(--text-secondary);" id="p-active-lbl">Visible en el menú</span>
-                    </div>
-
-                    <div style="background:var(--bg-muted); padding:15px; border-radius:12px; margin-bottom:20px;">
-                        <label style="font-weight:bold; color:var(--primary); display:block; margin-bottom:10px;"><i class="fas fa-salad"></i> GESTIÓN DE GUARNICIONES</label>
-                        
-                        <div class="form-group" style="margin-bottom:15px;">
-                            <label>MÁXIMO A ELEGIR POR EL CLIENTE</label>
-                            <input type="number" id="p-sides-limit" value="1" min="1" max="5" style="width:80px;">
+                        <div class="form-group">
+                            <label>DESCRIPCIÓN</label>
+                            <textarea id="p-desc" rows="2" placeholder="Ingredientes, tamaño..."></textarea>
+                        </div>
+                        <div class="form-group"
+                            style="display:flex;align-items:center;gap:10px;margin-bottom:16px;background:var(--bg-muted);padding:12px;border-radius:8px;">
+                            <label style="margin:0;flex:1;">¿ESTÁ DISPONIBLE?</label>
+                            <input type="checkbox" id="p-active" checked
+                                style="width:24px;height:24px;accent-color:var(--success);cursor:pointer;">
+                            <span style="font-size:0.85rem;color:var(--text-secondary);" id="p-active-lbl">Visible</span>
                         </div>
 
-                        <label style="font-size:0.85rem; color:var(--text-secondary); display:block; margin-bottom:8px;">MARCA LAS OPCIONES DISPONIBLES PARA ESTE PLATO:</label>
-                        <div id="sides-checkboxes" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                            <!-- Dinámico -->
+                        <div style="background:var(--bg-muted); padding:15px; border-radius:12px; margin-bottom:20px;">
+                            <label style="font-weight:bold; color:var(--primary); display:block; margin-bottom:10px;"><i class="fas fa-salad"></i> GESTIÓN DE GUARNICIONES</label>
+                            
+                            <div class="form-group" style="margin-bottom:15px;">
+                                <label>MÁXIMO A ELEGIR</label>
+                                <input type="number" id="p-sides-limit" value="1" min="1" max="5" style="width:80px;">
+                            </div>
+
+                            <label style="font-size:0.85rem; color:var(--text-secondary); display:block; margin-bottom:8px;">OPCIONES DISPONIBLES:</label>
+                            <div id="sides-checkboxes" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                                <!-- Dinámico -->
+                            </div>
                         </div>
-                    </div>
-                    <button type="submit" class="btn-save">Guardar Producto</button>
-                    <button type="button" id="p-cancel" class="btn-cancel">Cancelar</button>
-                </form>
+                        <button type="submit" class="btn-save">Guardar Cambios</button>
+                    </form>
+                </div>
             </div>
 
             <div id="product-list"></div>
@@ -219,6 +230,23 @@
                 </label>
             `).join('');
         }
+
+        function openProductModal() {
+            resetProductForm();
+            document.getElementById('product-modal').classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeProductModal() {
+            document.getElementById('product-modal').classList.remove('open');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Cerrar al hacer clic fuera del contenido
+        window.onclick = (event) => {
+            const modal = document.getElementById('product-modal');
+            if (event.target === modal) closeProductModal();
+        };
 
         async function syncFromCloud() {
             if (!cloudUrl) return;
@@ -395,7 +423,8 @@
                 products.push(prod);
             }
             localStorage.setItem('bocado_products', JSON.stringify(products));
-            resetProductForm(); renderProducts();
+            renderProducts();
+            closeProductModal();
             await cloudSave('saveProducts', products);
         };
 
@@ -421,11 +450,11 @@
             }
             
             const isInactive = p.active === false || String(p.active).toUpperCase() === 'FALSE' || String(p.active).toUpperCase() === 'FALSO';
+            document.getElementById('p-active').checked = !isInactive;
             
-            document.getElementById('p-active-lbl').innerText = isActive ? 'Visible en el menú' : 'Oculto (no se muestra)';
-            document.getElementById('product-form-title').innerHTML = '<i class="fas fa-edit"></i> Editando: ' + p.name;
-            document.getElementById('p-cancel').style.display = 'block';
-            window.scrollTo({ top: document.getElementById('product-form').offsetTop - 100, behavior: 'smooth' });
+            document.getElementById('product-form-title').innerHTML = '<i class="fas fa-edit"></i> Editando Producto';
+            document.getElementById('product-modal').classList.add('open');
+            document.body.style.overflow = 'hidden';
         };
 
         window.deleteProduct = async (id) => {
@@ -445,11 +474,9 @@
             document.getElementById('p-sides-limit').value = 1;
             document.querySelectorAll('.side-opt').forEach(el => el.checked = false);
             document.getElementById('p-active').checked = true;
-            document.getElementById('p-active-lbl').innerText = 'Visible en el menú';
             document.getElementById('product-form-title').innerHTML = '<i class="fas fa-plus-circle"></i> Agregar Producto';
-            document.getElementById('p-cancel').style.display = 'none';
         }
-        document.getElementById('p-cancel').onclick = resetProductForm;
+        
         document.getElementById('p-active').onchange = (e) => {
             document.getElementById('p-active-lbl').innerText = e.target.checked ? 'Visible en el menú' : 'Oculto (no se muestra)';
         };
