@@ -162,6 +162,20 @@
                             style="width:24px;height:24px;accent-color:var(--success);cursor:pointer;">
                         <span style="font-size:0.85rem;color:var(--text-secondary);" id="p-active-lbl">Visible en el menú</span>
                     </div>
+
+                    <div style="background:var(--bg-muted); padding:15px; border-radius:12px; margin-bottom:20px;">
+                        <label style="font-weight:bold; color:var(--primary); display:block; margin-bottom:10px;"><i class="fas fa-salad"></i> GESTIÓN DE GUARNICIONES</label>
+                        
+                        <div class="form-group" style="margin-bottom:15px;">
+                            <label>MÁXIMO A ELEGIR POR EL CLIENTE</label>
+                            <input type="number" id="p-sides-limit" value="1" min="1" max="5" style="width:80px;">
+                        </div>
+
+                        <label style="font-size:0.85rem; color:var(--text-secondary); display:block; margin-bottom:8px;">MARCA LAS OPCIONES DISPONIBLES PARA ESTE PLATO:</label>
+                        <div id="sides-checkboxes" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                            <!-- Dinámico -->
+                        </div>
+                    </div>
                     <button type="submit" class="btn-save">Guardar Producto</button>
                     <button type="button" id="p-cancel" class="btn-cancel">Cancelar</button>
                 </form>
@@ -181,10 +195,30 @@
         const cloudUrl = 'https://script.google.com/macros/s/AKfycbwVXPXZGGMozf2E213UnxdmlBwr9TSX2cmkCxMXgpZpO9zNo6DrWYzd7-5MM050jOyJ/exec';
         // ===================================================
 
+        const SIDES_LIST = [
+            'Arroz Amarillo',
+            'Ensalada Mixta',
+            'Papas Fritas',
+            'Fideos al Pesto',
+            'Fideos con Queso',
+            'Fideos con Manteca'
+        ];
+
         localStorage.removeItem('bocado_schedules'); // FLUSH CORRUPT DATES
         let products = JSON.parse(localStorage.getItem('bocado_products')) || [];
         let banners = JSON.parse(localStorage.getItem('bocado_banners')) || [];
         let schedules = [];
+
+        function renderSidesAdmin() {
+            const container = document.getElementById('sides-checkboxes');
+            if (!container) return;
+            container.innerHTML = SIDES_LIST.map(side => `
+                <label style="display:flex; align-items:center; gap:8px; font-size:0.85rem; cursor:pointer;">
+                    <input type="checkbox" class="side-opt" value="${side}" style="width:18px; height:18px;">
+                    ${side}
+                </label>
+            `).join('');
+        }
 
         async function syncFromCloud() {
             if (!cloudUrl) return;
@@ -351,7 +385,9 @@
                 desc: document.getElementById('p-desc').value,
                 stock: parseInt(document.getElementById('p-stock').value) || 0,
                 sortOrder: parseInt(document.getElementById('p-order').value) || 1,
-                active: document.getElementById('p-active').checked
+                active: document.getElementById('p-active').checked,
+                sidesLimit: parseInt(document.getElementById('p-sides-limit').value) || 1,
+                allowedSides: Array.from(document.querySelectorAll('.side-opt:checked')).map(el => el.value).join(',')
             };
             if (editId) {
                 products = products.map(p => String(p.id) === String(editId) ? prod : p);
@@ -370,12 +406,22 @@
             document.getElementById('p-price').value = p.price;
             document.getElementById('p-category').value = p.category;
             document.getElementById('p-img').value = p.img;
-            document.getElementById('p-desc').value = p.desc;
+            document.getElementById('p-desc').value = p.desc || '';
             document.getElementById('p-stock').value = p.stock !== undefined ? p.stock : 100;
             document.getElementById('p-order').value = p.sortOrder !== undefined ? p.sortOrder : 1;
+            document.getElementById('p-sides-limit').value = p.sidesLimit || 1;
+            
+            // Reset y marcar sides
+            document.querySelectorAll('.side-opt').forEach(el => el.checked = false);
+            if (p.allowedSides) {
+                const allowed = p.allowedSides.split(',');
+                document.querySelectorAll('.side-opt').forEach(el => {
+                    if (allowed.includes(el.value)) el.checked = true;
+                });
+            }
+            
             const isInactive = p.active === false || String(p.active).toUpperCase() === 'FALSE' || String(p.active).toUpperCase() === 'FALSO';
-            const isActive = !isInactive;
-            document.getElementById('p-active').checked = isActive;
+            
             document.getElementById('p-active-lbl').innerText = isActive ? 'Visible en el menú' : 'Oculto (no se muestra)';
             document.getElementById('product-form-title').innerHTML = '<i class="fas fa-edit"></i> Editando: ' + p.name;
             document.getElementById('p-cancel').style.display = 'block';
@@ -394,7 +440,10 @@
             document.getElementById('p-edit-id').value = '';
             document.getElementById('product-form').reset();
             document.getElementById('p-stock').value = 100;
+            document.getElementById('p-desc').value = '';
             document.getElementById('p-order').value = 1;
+            document.getElementById('p-sides-limit').value = 1;
+            document.querySelectorAll('.side-opt').forEach(el => el.checked = false);
             document.getElementById('p-active').checked = true;
             document.getElementById('p-active-lbl').innerText = 'Visible en el menú';
             document.getElementById('product-form-title').innerHTML = '<i class="fas fa-plus-circle"></i> Agregar Producto';
@@ -464,6 +513,7 @@
         renderProducts();
         renderBanners();
         renderSchedules();
+        renderSidesAdmin();
         syncFromCloud();
     </script>
 </body>

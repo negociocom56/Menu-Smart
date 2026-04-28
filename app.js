@@ -27,6 +27,14 @@ let map = null;
 let marker = null;
 let currentLat = -26.830419; // Default center (Tucuman)
 let currentLng = -65.203794;
+const GUARNICIONES = [
+    'Arroz Amarillo',
+    'Ensalada Mixta',
+    'Papas Fritas',
+    'Fideos al Pesto',
+    'Fideos con Queso',
+    'Fideos con Manteca'
+];
 
 // ===================================================
 // CONFIGURACIÓN MAESTRA (Sólo para Synergy Dev)
@@ -220,48 +228,97 @@ function renderProducts() {
         return;
     }
 
-    grid.innerHTML = list.map(p => {
-        const inCart = cart.find(c => String(c.id) === String(p.id));
-        const finalImgUrl = getDirectImageUrl(p.img); // Google Drive Fix
+    // Definir orden de categorías
+    const categoryOrder = ['Menú Trabajador', 'Menú Habitual', 'Platos Principales', 'Combos'];
+    
+    // Agrupar por categoría
+    const grouped = {};
+    list.forEach(p => {
+        if (!grouped[p.category]) grouped[p.category] = [];
+        grouped[p.category].push(p);
+    });
+
+    // Obtener todas las categorías presentes
+    let categoriesPresent = Object.keys(grouped);
+    
+    // Ordenar las categorías: primero las del categoryOrder, luego el resto alfabéticamente
+    categoriesPresent.sort((a, b) => {
+        let indexA = categoryOrder.indexOf(a);
+        let indexB = categoryOrder.indexOf(b);
+        if (indexA === -1) indexA = 999;
+        if (indexB === -1) indexB = 999;
+        if (indexA !== indexB) return indexA - indexB;
+        return a.localeCompare(b);
+    });
+
+    let html = '';
+    categoriesPresent.forEach(cat => {
+        html += `<h2 class="category-title" style="grid-column: 1/-1; margin-top: 30px; margin-bottom: 15px; font-size: 1.5rem; color: var(--primary); border-bottom: 2px solid var(--primary-light); padding-bottom: 8px; width: 100%;">${cat}</h2>`;
         
-        const stockVal = parseInt(p.stock);
-        const isAgotado = isNaN(stockVal) || stockVal <= 0;
-        const isAvailable = !isAgotado;
+        grouped[cat].forEach(p => {
+            const inCart = cart.find(c => String(c.id) === String(p.id));
+            const finalImgUrl = getDirectImageUrl(p.img);
+            
+            const stockVal = parseInt(p.stock);
+            const isAgotado = isNaN(stockVal) || stockVal <= 0;
+            const isAvailable = !isAgotado;
 
-        let actionHtml = '';
-        if (!isAvailable) {
-            actionHtml = `<button class="btn-add" style="width:auto;padding:0 16px;background:var(--text-muted);cursor:not-allowed;" disabled>AGOTADO</button>`;
-        } else if (inCart) {
-            actionHtml = `
-                <div class="qty-control">
-                    <button onclick="changeQty('${p.id}',-1)"><i class="fas fa-minus"></i></button>
-                    <span>${inCart.qty}</span>
-                    <button onclick="changeQty('${p.id}',1)"><i class="fas fa-plus"></i></button>
-                </div>
-            `;
-        } else {
-            actionHtml = `<button class="btn-add" onclick="addItem('${p.id}')"><i class="fas fa-plus"></i></button>`;
-        }
+            let actionHtml = '';
+            if (!isAvailable) {
+                actionHtml = `<button class="btn-add" style="width:auto;padding:0 16px;background:var(--text-muted);cursor:not-allowed;" disabled>AGOTADO</button>`;
+            } else if (inCart) {
+                actionHtml = `
+                    <div class="qty-control">
+                        <button onclick="changeQty('${p.id}',-1)"><i class="fas fa-minus"></i></button>
+                        <span>${inCart.qty}</span>
+                        <button onclick="changeQty('${p.id}',1)"><i class="fas fa-plus"></i></button>
+                    </div>
+                `;
+            } else {
+                actionHtml = `<button class="btn-add" onclick="addItem('${p.id}')"><i class="fas fa-plus"></i></button>`;
+            }
 
-        return `
-        <div class="product-card" id="card-${p.id}" style="${!isAvailable ? 'opacity:0.6;' : ''}">
-            <span class="cat-badge" style="${!isAvailable ? 'background:var(--text-muted);' : ''}">${!isAvailable ? 'AGOTADO' : p.category}</span>
-            <img src="${finalImgUrl}" alt="${p.name}" class="card-img" style="${!isAvailable ? 'filter:grayscale(1);' : ''}" onerror="this.src='https://placehold.co/600x400/f3eeea/a89e96?text=${encodeURIComponent(p.name)}'">
-            <div class="card-body">
-                <h3>${p.name}</h3>
-                <p class="desc">${p.desc}</p>
-                <div class="card-footer">
-                    <span class="card-price" style="${!isAvailable ? 'color:var(--text-muted);' : ''}">$${p.price.toLocaleString('es-AR')}</span>
-                    ${actionHtml}
+            const allowedStr = p.allowedSides || '';
+            const allowedArray = allowedStr.split(',').filter(x => x.trim() !== '');
+            const limit = parseInt(p.sidesLimit) || 1;
+            const selectedSides = inCart.selectedSides || [];
+
+            html += `
+            <div class="product-card" id="card-${p.id}" style="${!isAvailable ? 'opacity:0.6;' : ''}">
+                <span class="cat-badge" style="${!isAvailable ? 'background:var(--text-muted);' : ''}">${!isAvailable ? 'AGOTADO' : p.category}</span>
+                <img src="${finalImgUrl}" alt="${p.name}" class="card-img" style="${!isAvailable ? 'filter:grayscale(1);' : ''}" onerror="this.src='https://placehold.co/600x400/f3eeea/a89e96?text=${encodeURIComponent(p.name)}'">
+                <div class="card-body">
+                    <h3>${p.name}</h3>
+                    <p class="desc">${p.desc}</p>
+                    <div class="card-footer">
+                        <span class="card-price" style="${!isAvailable ? 'color:var(--text-muted);' : ''}">$${p.price.toLocaleString('es-AR')}</span>
+                        ${actionHtml}
+                    </div>
+                    ${inCart && isAvailable ? `
+                        ${allowedArray.length > 0 ? `
+                            <div style="margin-top:10px; background:var(--bg-muted); padding:10px; border-radius:8px;">
+                                <label style="font-size:0.75rem; font-weight:bold; color:var(--primary); display:block; margin-bottom:6px;">🥗 ELEGÍ TU GUARNICIÓN (Máx. ${limit}):</label>
+                                <div style="display:grid; grid-template-columns:1fr; gap:6px;">
+                                    ${allowedArray.map(g => `
+                                        <label style="display:flex; align-items:center; gap:8px; font-size:0.8rem; cursor:pointer;">
+                                            <input type="checkbox" onchange="toggleSide('${p.id}', '${g}')" 
+                                                ${selectedSides.includes(g) ? 'checked' : ''}
+                                                style="width:16px; height:16px; accent-color:var(--primary);">
+                                            ${g}
+                                        </label>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+                        <input type="text" class="note-input" placeholder="✏️ Aclaración (ej: sin picante)" 
+                               value="${inCart.note || ''}" 
+                               oninput="updateNote('${p.id}', this.value)" style="margin-top:8px;">
+                    ` : ''}
                 </div>
-                ${inCart && isAvailable ? `
-                    <input type="text" class="note-input" placeholder="✏️ Aclaración (ej: sin picante)" 
-                           value="${inCart.note || ''}" 
-                           oninput="updateNote('${p.id}', this.value)">
-                ` : ''}
-            </div>
-        </div>`;
-    }).join('');
+            </div>`;
+        });
+    });
+    grid.innerHTML = html;
 }
 
 // ---- 8. CART LOGIC ----
@@ -299,9 +356,38 @@ function changeQty(id, delta) {
     refresh();
 }
 
-function updateNote(id, text) {
+function updateNote(id, val) {
     const item = cart.find(c => String(c.id) === String(id));
-    if (item) item.note = text;
+    if (item) item.note = val;
+    localStorage.setItem('bocado_cart', JSON.stringify(cart));
+}
+
+function updateSide(id, val) {
+    // Deprecated for toggleSide
+}
+
+function toggleSide(id, side) {
+    const item = cart.find(c => String(c.id) === String(id));
+    if (!item) return;
+    
+    const p = products.find(x => String(x.id) === String(id));
+    const limit = parseInt(p?.sidesLimit) || 1;
+    
+    if (!item.selectedSides) item.selectedSides = [];
+    
+    if (item.selectedSides.includes(side)) {
+        item.selectedSides = item.selectedSides.filter(s => s !== side);
+    } else {
+        if (item.selectedSides.length < limit) {
+            item.selectedSides.push(side);
+        } else {
+            toast(`Máximo ${limit} guarniciones`);
+            renderProducts(); 
+            return;
+        }
+    }
+    localStorage.setItem('bocado_cart', JSON.stringify(cart));
+    renderProducts();
 }
 
 function refresh() {
@@ -361,7 +447,8 @@ function openCheckout() {
             <img src="${item.img}" alt="" onerror="this.src='https://placehold.co/50x50/f3eeea/a89e96?text=?'">
             <div class="item-info">
                 <h4>${item.name} × ${item.qty}</h4>
-                ${item.note ? `<div class="item-note">📝 ${item.note}</div>` : ''}
+                ${item.selectedSides && item.selectedSides.length > 0 ? `<div class="item-note">🥗 Guarnición: ${item.selectedSides.join(', ')}</div>` : ''}
+                ${item.note ? `<div class="item-note">📝 Nota: ${item.note}</div>` : ''}
                 <span>$${item.price.toLocaleString('es-AR')} c/u</span>
             </div>
             <div class="item-price">$${(item.price * item.qty).toLocaleString('es-AR')}</div>
@@ -524,7 +611,8 @@ async function submitOrder(e) {
     let msg = `=== *Pedido Puro Sabor* ===\n\n`;
     cart.forEach(item => {
         msg += `${item.name.toUpperCase()} x${item.qty} - $${(item.price * item.qty).toLocaleString('es-AR')}`;
-        if (item.note) msg += ` _(${item.note})_`;
+        if (item.selectedSides && item.selectedSides.length > 0) msg += `\n   🥗 Guarnición: ${item.selectedSides.join(', ')}`;
+        if (item.note) msg += `\n   📝 Nota: ${item.note}`;
         msg += `\n`;
     });
 
