@@ -281,7 +281,7 @@ function renderProducts() {
             const allowedStr = p.allowedSides || '';
             const allowedArray = allowedStr.split(',').filter(x => x.trim() !== '');
             const limit = parseInt(p.sidesLimit) || 1;
-            const selectedSides = inCart.selectedSides || [];
+            const selectedSides = inCart ? (inCart.selectedSides || []) : [];
 
             html += `
             <div class="product-card" id="card-${p.id}" style="${!isAvailable ? 'opacity:0.6;' : ''}">
