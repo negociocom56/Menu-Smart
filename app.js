@@ -72,6 +72,17 @@ async function syncFromCloud() {
     }
 }
 
+async function cloudSave(action, payload) {
+    if (!CLOUD_URL) return;
+    // Usamos mode: no-cors y text/plain para saltar las restricciones de Google
+    await fetch(CLOUD_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify({ action, payload })
+    });
+}
+
 // ==== KILL SWITCH (SISTEMA DE SEGURIDAD SAAS) ====
 async function initSecurity() {
     try {
