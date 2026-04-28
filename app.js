@@ -13,7 +13,6 @@ const SEED_PRODUCTS = [
 const SEED_BANNERS = [
     { id: 1, title: '🛵 Envío GRATIS', subtitle: 'En pedidos dentro de las 4 avenidas (centro).', color: '#14281a' },
 ];
-
 // ---- 3. STATE ----
 let products = JSON.parse(localStorage.getItem('bocado_products')) || SEED_PRODUCTS;
 let banners = JSON.parse(localStorage.getItem('bocado_banners')) || SEED_BANNERS;
@@ -192,6 +191,19 @@ function renderProducts() {
     if (currentCat !== 'Todo') list = list.filter(p => p.category === currentCat);
     if (searchQuery) list = list.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
+    // Ocultar inactivos (los que el admin desactivó del menú)
+    list = list.filter(p => {
+        const isInactive = p.active === false || String(p.active).toUpperCase() === 'FALSE' || String(p.active).toUpperCase() === 'FALSO';
+        return !isInactive;
+    });
+
+    // Ordenar por sortOrder
+    list.sort((a, b) => {
+        const orderA = parseInt(a.sortOrder) || 0;
+        const orderB = parseInt(b.sortOrder) || 0;
+        return orderA - orderB;
+    });
+
     if (list.length === 0) {
         grid.innerHTML = `<div class="empty-state"><i class="fas fa-search"></i><p>No se encontraron productos.</p></div>`;
         return;
@@ -200,39 +212,41 @@ function renderProducts() {
     grid.innerHTML = list.map(p => {
         const inCart = cart.find(c => String(c.id) === String(p.id));
         const finalImgUrl = getDirectImageUrl(p.img); // Google Drive Fix
-        const isInactive = p.active === false || String(p.active).toUpperCase() === 'FALSE' || String(p.active).toUpperCase() === 'FALSO';
-        const isActive = !isInactive;
+        
+        const stockVal = parseInt(p.stock);
+        const isAgotado = isNaN(stockVal) || stockVal <= 0;
+        const isAvailable = !isAgotado;
 
         let actionHtml = '';
-        if (!isActive) {
+        if (!isAvailable) {
             actionHtml = `<button class="btn-add" style="width:auto;padding:0 16px;background:var(--text-muted);cursor:not-allowed;" disabled>AGOTADO</button>`;
         } else if (inCart) {
             actionHtml = `
                 <div class="qty-control">
-                    <button onclick="changeQty(${p.id},-1)"><i class="fas fa-minus"></i></button>
+                    <button onclick="changeQty('${p.id}',-1)"><i class="fas fa-minus"></i></button>
                     <span>${inCart.qty}</span>
-                    <button onclick="changeQty(${p.id},1)"><i class="fas fa-plus"></i></button>
+                    <button onclick="changeQty('${p.id}',1)"><i class="fas fa-plus"></i></button>
                 </div>
             `;
         } else {
-            actionHtml = `<button class="btn-add" onclick="addItem(${p.id})"><i class="fas fa-plus"></i></button>`;
+            actionHtml = `<button class="btn-add" onclick="addItem('${p.id}')"><i class="fas fa-plus"></i></button>`;
         }
 
         return `
-        <div class="product-card" id="card-${p.id}" style="${!isActive ? 'opacity:0.6;' : ''}">
-            <span class="cat-badge" style="${!isActive ? 'background:var(--text-muted);' : ''}">${!isActive ? 'AGOTADO' : p.category}</span>
-            <img src="${finalImgUrl}" alt="${p.name}" class="card-img" style="${!isActive ? 'filter:grayscale(1);' : ''}" onerror="this.src='https://placehold.co/600x400/f3eeea/a89e96?text=${encodeURIComponent(p.name)}'">
+        <div class="product-card" id="card-${p.id}" style="${!isAvailable ? 'opacity:0.6;' : ''}">
+            <span class="cat-badge" style="${!isAvailable ? 'background:var(--text-muted);' : ''}">${!isAvailable ? 'AGOTADO' : p.category}</span>
+            <img src="${finalImgUrl}" alt="${p.name}" class="card-img" style="${!isAvailable ? 'filter:grayscale(1);' : ''}" onerror="this.src='https://placehold.co/600x400/f3eeea/a89e96?text=${encodeURIComponent(p.name)}'">
             <div class="card-body">
                 <h3>${p.name}</h3>
                 <p class="desc">${p.desc}</p>
                 <div class="card-footer">
-                    <span class="card-price" style="${!isActive ? 'color:var(--text-muted);' : ''}">$${p.price.toLocaleString('es-AR')}</span>
+                    <span class="card-price" style="${!isAvailable ? 'color:var(--text-muted);' : ''}">$${p.price.toLocaleString('es-AR')}</span>
                     ${actionHtml}
                 </div>
-                ${inCart && isActive ? `
+                ${inCart && isAvailable ? `
                     <input type="text" class="note-input" placeholder="✏️ Aclaración (ej: sin picante)" 
                            value="${inCart.note || ''}" 
-                           oninput="updateNote(${p.id}, this.value)">
+                           oninput="updateNote('${p.id}', this.value)">
                 ` : ''}
             </div>
         </div>`;
@@ -243,6 +257,11 @@ function renderProducts() {
 function addItem(id) {
     const p = products.find(x => String(x.id) === String(id));
     if (!p) return;
+    const stockVal = parseInt(p.stock);
+    if (isNaN(stockVal) || stockVal <= 0) {
+        toast('Este producto está agotado');
+        return;
+    }
     cart.push({ ...p, qty: 1, note: '' });
     toast(`${p.name} agregado ✓`);
     refresh();
@@ -251,6 +270,16 @@ function addItem(id) {
 function changeQty(id, delta) {
     const item = cart.find(c => String(c.id) === String(id));
     if (!item) return;
+
+    if (delta > 0) {
+        const p = products.find(x => String(x.id) === String(id));
+        const stockVal = parseInt(p?.stock);
+        if (isNaN(stockVal) || (item.qty + delta) > stockVal) {
+            toast('Stock máximo alcanzado');
+            return;
+        }
+    }
+
     item.qty += delta;
     if (item.qty <= 0) {
         cart = cart.filter(c => String(c.id) !== String(id));
@@ -291,10 +320,13 @@ function openCheckout() {
     const argTimeStr = now.toLocaleString('en-US', { timeZone: 'America/Argentina/Buenos_Aires' });
     const argDate = new Date(argTimeStr); // Parse as local to extract hours/minutes
 
+    // TEMP: Bloqueo horario desactivado para pruebas
+    /*
     if (argDate.getHours() < 10 || argDate.getHours() > 15 || (argDate.getHours() === 15 && argDate.getMinutes() >= 30)) {
         toast('El local se encuentra cerrado. (Abre a las 10:00)');
         return;
     }
+    */
 
     const ov = document.getElementById('checkout-overlay');
     ov.classList.add('open');
@@ -311,7 +343,9 @@ function openCheckout() {
         }
     }
 
-    const total = cart.reduce((a, c) => a + c.price * c.qty, 0);
+    let total = cart.reduce((a, c) => a + c.price * c.qty, 0);
+    if (document.getElementById('opt-cubiertos')?.checked) total += 200;
+    if (document.getElementById('opt-envio-prio')?.checked) total += 2000;
     document.getElementById('checkout-total').innerText = total.toLocaleString('es-AR');
 
     document.getElementById('checkout-items').innerHTML = cart.map(item => `
@@ -448,7 +482,7 @@ async function reverseGeocode(lat, lng) {
 }
 
 // ---- 12. WHATSAPP SUBMIT ----
-function submitOrder(e) {
+async function submitOrder(e) {
     e.preventDefault();
     if (!validateForm()) {
         toast('⚠️ Revisá los campos marcados en rojo');
@@ -469,7 +503,13 @@ function submitOrder(e) {
     };
     const payment = paymentNames[paymentRaw] || paymentRaw;
 
-    const total = cart.reduce((a, c) => a + c.price * c.qty, 0);
+    const optCubiertos = document.getElementById('opt-cubiertos')?.checked;
+    const optEnvioPrio = document.getElementById('opt-envio-prio')?.checked;
+
+    let total = cart.reduce((a, c) => a + c.price * c.qty, 0);
+    if (optCubiertos) total += 200;
+    if (optEnvioPrio) total += 2000;
+
     const orderId = `${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${String(Date.now()).slice(-6)}`;
 
     // Build message with plain text symbols (no emojis to ensure compatibility)
@@ -479,6 +519,9 @@ function submitOrder(e) {
         if (item.note) msg += ` _(${item.note})_`;
         msg += `\n`;
     });
+
+    if (optCubiertos) msg += `🍴 Cubiertos (+ $200)\n`;
+    if (optEnvioPrio) msg += `🚀 Envío Prioritario (+ $2000)\n`;
 
     msg += `💰 *Total: $${total.toLocaleString('es-AR')}* $$$\n\n`;
     msg += `👤 Nombre: ${name}\n`;
@@ -492,7 +535,46 @@ function submitOrder(e) {
     msg += `✅ *Pedido Solicitado. ¡Muchas gracias!*`;
 
     const shopNum = '543813934389';
-    window.open(`https://wa.me/${shopNum}?text=${encodeURIComponent(msg)}`, '_blank');
+    const waUrl = `https://wa.me/${shopNum}?text=${encodeURIComponent(msg)}`;
+
+    const btn = document.querySelector('.btn-whatsapp');
+    if (btn) {
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+        btn.disabled = true;
+    }
+
+    try {
+        const deductPayload = cart.map(item => ({ id: item.id, qty: item.qty }));
+        await cloudSave('deductStock', deductPayload);
+        
+        // Descontar localmente
+        deductPayload.forEach(item => {
+            const prod = products.find(p => String(p.id) === String(item.id));
+            if (prod) {
+                const currentStock = parseInt(prod.stock);
+                if (!isNaN(currentStock)) {
+                    prod.stock = Math.max(0, currentStock - item.qty);
+                }
+            }
+        });
+        localStorage.setItem('bocado_products', JSON.stringify(products));
+        
+        cart = [];
+        localStorage.removeItem('bocado_cart');
+        refresh();
+        document.getElementById('checkout-overlay').classList.remove('open');
+        renderProducts();
+
+        window.open(waUrl, '_blank');
+    } catch (e) {
+        console.error("Error al descontar stock:", e);
+        toast('❌ Error de conexión. Intenta de nuevo.');
+    } finally {
+        if (btn) {
+            btn.innerHTML = '<i class="fab fa-whatsapp"></i> Confirmar por WhatsApp';
+            btn.disabled = false;
+        }
+    }
 }
 
 // ---- 13. EVENTS ----
@@ -501,6 +583,18 @@ function setupEvents() {
         searchQuery = e.target.value;
         renderProducts();
     });
+
+    const updateCheckoutTotal = () => {
+        const totalElem = document.getElementById('checkout-total');
+        if(totalElem) {
+            let total = cart.reduce((a, c) => a + c.price * c.qty, 0);
+            if (document.getElementById('opt-cubiertos')?.checked) total += 200;
+            if (document.getElementById('opt-envio-prio')?.checked) total += 2000;
+            totalElem.innerText = total.toLocaleString('es-AR');
+        }
+    };
+    document.getElementById('opt-cubiertos')?.addEventListener('change', updateCheckoutTotal);
+    document.getElementById('opt-envio-prio')?.addEventListener('change', updateCheckoutTotal);
 
     document.getElementById('open-checkout')?.addEventListener('click', openCheckout);
     document.getElementById('cart-header-btn')?.addEventListener('click', () => {
