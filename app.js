@@ -331,13 +331,10 @@ function openCheckout() {
     const argTimeStr = now.toLocaleString('en-US', { timeZone: 'America/Argentina/Buenos_Aires' });
     const argDate = new Date(argTimeStr); // Parse as local to extract hours/minutes
 
-    // TEMP: Bloqueo horario desactivado para pruebas
-    /*
     if (argDate.getHours() < 10 || argDate.getHours() > 15 || (argDate.getHours() === 15 && argDate.getMinutes() >= 30)) {
         toast('El local se encuentra cerrado. (Abre a las 10:00)');
         return;
     }
-    */
 
     const ov = document.getElementById('checkout-overlay');
     ov.classList.add('open');
