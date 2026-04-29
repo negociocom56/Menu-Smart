@@ -661,7 +661,7 @@ async function submitOrder(e) {
         document.getElementById('checkout-overlay').classList.remove('open');
         renderProducts();
 
-        window.open(waUrl, '_blank');
+        window.location.href = waUrl;
     } catch (e) {
         console.error("Error al descontar stock:", e);
         toast('❌ Error de conexión. Intenta de nuevo.');
