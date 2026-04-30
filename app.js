@@ -412,7 +412,7 @@ function refresh() {
 
 // ---- 9. CHECKOUT ----
 function openCheckout() {
-    // === CIERRE AUTOMÁTICO (Hora Argentina) ===
+    /* === CIERRE AUTOMÁTICO (Hora Argentina) ===
     const now = new Date();
     const argTimeStr = now.toLocaleString('en-US', { timeZone: 'America/Argentina/Buenos_Aires' });
     const argDate = new Date(argTimeStr); // Parse as local to extract hours/minutes
@@ -421,6 +421,7 @@ function openCheckout() {
         toast('El local se encuentra cerrado. (Abre a las 10:00)');
         return;
     }
+    */
 
     const ov = document.getElementById('checkout-overlay');
     ov.classList.add('open');
@@ -631,8 +632,6 @@ async function submitOrder(e) {
     msg += `✅ *Pedido Solicitado. ¡Muchas gracias!*`;
 
     const shopNum = '543813934389';
-    const waUrl = `https://wa.me/${shopNum}?text=${encodeURIComponent(msg)}`;
-
     const btn = document.querySelector('.btn-whatsapp');
     if (btn) {
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
@@ -641,8 +640,42 @@ async function submitOrder(e) {
 
     try {
         const deductPayload = cart.map(item => ({ id: item.id, qty: item.qty }));
-        await cloudSave('deductStock', deductPayload);
         
+        // --- EJECUCIÓN EN PARALELO (MÁXIMA VELOCIDAD) ---
+        // Descontamos stock y generamos el link corto al mismo tiempo
+        const [cloudRes, shortRes] = await Promise.allSettled([
+            cloudSave('deductStock', deductPayload),
+            (async () => {
+                const receiptData = {
+                    i: orderId, n: name, p: phone, t: total, m: payment, d: delivery,
+                    a: delivery === 'delivery' ? address : 'Paso a Retirar',
+                    it: cart.map(item => ({
+                        n: item.name, q: item.qty, p: item.price,
+                        o: item.selectedSides && item.selectedSides.length > 0 
+                           ? `[${item.selectedSides.join(', ')}] ${item.note || ''}` 
+                           : (item.note || '')
+                    }))
+                };
+                const base64Data = btoa(unescape(encodeURIComponent(JSON.stringify(receiptData))));
+                const fullReceiptUrl = `${window.location.origin}${window.location.pathname.replace('index.html', '')}receipt.html?data=${base64Data}`;
+                const res = await fetch(`https://tinyurl.com/api-create.php?url=${encodeURIComponent(fullReceiptUrl)}`);
+                if (res.ok) return await res.text();
+                return fullReceiptUrl;
+            })()
+        ]);
+        
+        // Si el descuento de stock falló, lanzamos error para que no se limpie el carrito
+        if (cloudRes.status === 'rejected') {
+            throw new Error("Cloud save failed: " + cloudRes.reason);
+        }
+
+        if (shortRes.status === 'fulfilled' && shortRes.value) {
+            msg += `\n🧾 *Tu Recibo Digital:* ${shortRes.value}\n`;
+        }
+        
+        // Recalcular waUrl con el link del recibo si se generó
+        const waUrl = `https://wa.me/${shopNum}?text=${encodeURIComponent(msg)}`;
+
         // Descontar localmente
         deductPayload.forEach(item => {
             const prod = products.find(p => String(p.id) === String(item.id));
