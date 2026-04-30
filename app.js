@@ -658,7 +658,8 @@ async function submitOrder(e) {
                 };
                 const base64Data = btoa(unescape(encodeURIComponent(JSON.stringify(receiptData))));
                 const fullReceiptUrl = `${window.location.origin}${window.location.pathname.replace('index.html', '')}receipt.html?data=${base64Data}`;
-                const res = await fetch(`https://tinyurl.com/api-create.php?url=${encodeURIComponent(fullReceiptUrl)}`);
+                // Cambiamos a is.gd para evitar la pantalla de "preview" de TinyURL
+                const res = await fetch(`https://is.gd/create.php?format=simple&url=${encodeURIComponent(fullReceiptUrl)}`);
                 if (res.ok) return await res.text();
                 return fullReceiptUrl;
             })()
