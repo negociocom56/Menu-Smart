@@ -658,9 +658,15 @@ async function submitOrder(e) {
                 };
                 const base64Data = btoa(unescape(encodeURIComponent(JSON.stringify(receiptData))));
                 const fullReceiptUrl = `${window.location.origin}${window.location.pathname.replace('index.html', '')}receipt.html?data=${base64Data}`;
-                // Cambiamos a is.gd para evitar la pantalla de "preview" de TinyURL
-                const res = await fetch(`https://is.gd/create.php?format=simple&url=${encodeURIComponent(fullReceiptUrl)}`);
-                if (res.ok) return await res.text();
+                try {
+                    // Intentamos acortar, pero si falla por CORS o red, devolvemos el link largo
+                    const res = await fetch(`https://is.gd/create.php?format=simple&url=${encodeURIComponent(fullReceiptUrl)}`, {
+                        method: 'GET'
+                    });
+                    if (res.ok) return await res.text();
+                } catch (err) {
+                    console.warn("Error de CORS o red al acortar, usando link largo.");
+                }
                 return fullReceiptUrl;
             })()
         ]);
