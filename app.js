@@ -72,6 +72,13 @@ async function syncFromCloud() {
             schedules = data.schedules;
             localStorage.setItem('bocado_schedules', JSON.stringify(schedules));
         }
+        if (data.config) {
+            const shopOpen = data.config.find(c => c.key === 'shop_open');
+            if (shopOpen) {
+                const isOpen = shopOpen.value === true || String(shopOpen.value).toLowerCase() === 'true';
+                localStorage.setItem('bocado_shop_open', isOpen);
+            }
+        }
         renderBanners();
         renderCategories();
         renderProducts();
@@ -412,6 +419,13 @@ function refresh() {
 
 // ---- 9. CHECKOUT ----
 function openCheckout() {
+    // === BLOQUEO MANUAL (ADMIN) ===
+    const isShopOpenManual = localStorage.getItem('bocado_shop_open') !== 'false';
+    if (!isShopOpenManual) {
+        toast('🛵 El local está cerrado por el momento. ¡Volvemos pronto!');
+        return;
+    }
+
     // === CIERRE AUTOMÁTICO (Hora Argentina) ===
     const now = new Date();
     const argTimeStr = now.toLocaleString('en-US', { timeZone: 'America/Argentina/Buenos_Aires' });

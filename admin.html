@@ -35,9 +35,23 @@
 
     <main class="container" style="padding-top:20px;padding-bottom:60px;">
 
+        <!-- ===== SHOP STATUS TOGGLE ===== -->
+        <section class="admin-form-card" style="border-left: 5px solid var(--brand); padding: 20px;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+                <div>
+                    <h3 style="margin-bottom: 4px; color: var(--brand);">ESTADO DEL LOCAL</h3>
+                    <p id="shop-status-text" style="font-size: 0.85rem; color: var(--text-secondary);">Cargando estado...</p>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="shop-open-toggle" onchange="toggleShopStatus(this.checked)">
+                    <span class="slider round"></span>
+                </label>
+            </div>
+        </section>
+
         <!-- ===== HELP SECTION: IMAGES ===== -->
         <section class="admin-form-card"
-            style="background: var(--brand-bg); border-style: dashed; border-color: var(--brand);">
+            style="background: var(--brand-bg); border-style: dashed; border-color: var(--brand); padding: 15px;">
             <h3 style="margin-bottom: 12px; color: var(--brand);">
                 <i class="fas fa-info-circle"></i> Instrucciones para fotos
             </h3>
@@ -263,18 +277,35 @@
                     banners = data.banners;
                     localStorage.setItem('bocado_banners', JSON.stringify(banners));
                 }
-                if (data.schedules && data.schedules.length > 0) {
-                    schedules = data.schedules;
-                    localStorage.setItem('bocado_schedules', JSON.stringify(schedules));
+                if (data.config) {
+                    const shopOpen = data.config.find(c => c.key === 'shop_open');
+                    if (shopOpen) {
+                        const isOpen = shopOpen.value === true || String(shopOpen.value).toLowerCase() === 'true';
+                        document.getElementById('shop-open-toggle').checked = isOpen;
+                        updateStatusUI(isOpen);
+                    }
                 }
                 renderProducts();
                 renderBanners();
                 renderSchedules();
-                toast("Nube actualizada ✓");
             } catch (e) {
                 console.error("Error en syncFromCloud:", e);
-                toast("Error al sincronizar ❌");
             }
+        }
+
+        function updateStatusUI(isOpen) {
+            const text = document.getElementById('shop-status-text');
+            if (!text) return;
+            text.innerHTML = isOpen 
+                ? '<i class="fas fa-check-circle" style="color:var(--success)"></i> <strong>ABIERTO</strong> (Sigue horario automático)' 
+                : '<i class="fas fa-times-circle" style="color:var(--danger)"></i> <strong>CERRADO MANUALMENTE</strong>';
+        }
+
+        async function toggleShopStatus(isOpen) {
+            updateStatusUI(isOpen);
+            const config = [{ key: 'shop_open', value: isOpen }];
+            await cloudSave('saveConfig', config);
+            toast(isOpen ? 'Local abierto (modo automático)' : 'Local cerrado para pedidos');
         }
 
         async function cloudSave(action, payload) {
