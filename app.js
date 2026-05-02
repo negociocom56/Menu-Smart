@@ -426,7 +426,7 @@ function openCheckout() {
         return;
     }
 
-    // === CIERRE AUTOMÁTICO (Hora Argentina) ===
+    /* === CIERRE AUTOMÁTICO (Hora Argentina) ===
     const now = new Date();
     const argTimeStr = now.toLocaleString('en-US', { timeZone: 'America/Argentina/Buenos_Aires' });
     const argDate = new Date(argTimeStr); // Parse as local to extract hours/minutes
@@ -435,6 +435,7 @@ function openCheckout() {
         toast('El local se encuentra cerrado. (Abre a las 10:00)');
         return;
     }
+    */
 
     const ov = document.getElementById('checkout-overlay');
     ov.classList.add('open');
@@ -495,7 +496,7 @@ function validateForm() {
         name.style.borderColor = '';
     }
 
-    // Phone: only digits, 10-13 chars
+    // Phone
     const phoneClean = phone.value.replace(/\D/g, '');
     if (phoneClean.length < 10 || phoneClean.length > 13) {
         phone.style.borderColor = '#e74c3c';
@@ -511,6 +512,20 @@ function validateForm() {
         ok = false;
     } else {
         if (addr) addr.style.borderColor = '';
+    }
+
+    // --- NUEVA VALIDACIÓN: GUARNICIONES EN EL CARRITO ---
+    let missingSides = false;
+    cart.forEach(item => {
+        // Si el producto tiene guarniciones permitidas pero no eligió ninguna
+        if (item.allowedSides && item.allowedSides.length > 0 && (!item.selectedSides || item.selectedSides.length === 0)) {
+            missingSides = true;
+        }
+    });
+
+    if (missingSides) {
+        toast('🥗 Por favor, seleccioná la guarnición para tus platos.');
+        ok = false;
     }
 
     return ok;
@@ -662,6 +677,11 @@ async function submitOrder(e) {
                 const receiptData = {
                     i: orderId, n: name, p: phone, t: total, m: payment, d: delivery,
                     a: delivery === 'delivery' ? address : 'Paso a Retirar',
+                    time: timeRaw,
+                    opts: {
+                        cubiertos: optCubiertos,
+                        prio: optEnvioPrio
+                    },
                     it: cart.map(item => ({
                         n: item.name, q: item.qty, p: item.price,
                         o: item.selectedSides && item.selectedSides.length > 0 
