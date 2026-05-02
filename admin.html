@@ -277,6 +277,10 @@
                     banners = data.banners;
                     localStorage.setItem('bocado_banners', JSON.stringify(banners));
                 }
+                if (data.schedules && data.schedules.length > 0) {
+                    schedules = data.schedules;
+                    localStorage.setItem('bocado_schedules', JSON.stringify(schedules));
+                }
                 if (data.config) {
                     const shopOpen = data.config.find(c => c.key === 'shop_open');
                     if (shopOpen) {
