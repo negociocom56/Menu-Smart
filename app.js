@@ -94,7 +94,11 @@ async function cloudSave(action, payload) {
         method: 'POST',
         mode: 'no-cors',
         headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify({ action, payload })
+        body: JSON.stringify({ 
+            action, 
+            payload,
+            token: 'PURO_SABOR_SECURE_2024'
+        })
     });
 }
 

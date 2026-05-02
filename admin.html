@@ -321,7 +321,11 @@
                 await fetch(cloudUrl, {
                     method: 'POST',
                     mode: 'no-cors',
-                    body: JSON.stringify({ action, payload })
+                    body: JSON.stringify({ 
+                        action, 
+                        payload,
+                        token: 'PURO_SABOR_SECURE_2024'
+                    })
                 });
                 // Apps Script no permite leer la respuesta con no-cors, así que asumimos éxito y resincronizamos en 2 seg
                 setTimeout(syncFromCloud, 2000);

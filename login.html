@@ -38,7 +38,9 @@
             e.preventDefault();
             const u = document.getElementById('user').value;
             const p = document.getElementById('pass').value;
-            if (u === 'operador' && p === 'com026') {
+            
+            // Credenciales ofuscadas (b3BlcmFkb3I= = operador, Y29tMDI2 = com026)
+            if (btoa(u) === 'b3BlcmFkb3I=' && btoa(p) === 'Y29tMDI2') {
                 sessionStorage.setItem('bocado_auth', 'true');
                 window.location.href = 'admin.html';
             } else {

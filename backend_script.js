@@ -1,8 +1,9 @@
 /**
- * BOCADO CLOUD BACKEND (Google Sheets) v8.0
- * Soporte para Bloqueo Manual (Open/Closed) y Configuración Global.
+ * BOCADO CLOUD BACKEND (Google Sheets) v9.0
+ * Soporte para Seguridad por Token (API KEY).
  */
 const SPREADSHEET_ID = '1Dtuhp3L1aVH9UkUO9eMZNXNntZYAldZ6-gETVviJRpA';
+const AUTH_TOKEN = 'PURO_SABOR_SECURE_2024'; // <--- CLAVE SECRETA
 
 function doGet(e) {
   const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
@@ -22,8 +23,14 @@ function doGet(e) {
 
 function doPost(e) {
   const data = JSON.parse(e.postData.contents);
-  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
   
+  // VERIFICACIÓN DE SEGURIDAD
+  if (data.token !== AUTH_TOKEN) {
+    return ContentService.createTextOutput(JSON.stringify({ success: false, error: 'Unauthorized' }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
   const productFields = ['id', 'name', 'price', 'category', 'img', 'desc', 'active', 'stock', 'sortOrder', 'allowedSides', 'sidesLimit'];
 
   if (data.action === 'saveProducts') {
