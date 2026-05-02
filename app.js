@@ -419,6 +419,19 @@ function refresh() {
 
 // ---- 9. CHECKOUT ----
 function openCheckout() {
+    // --- NUEVA VALIDACIÓN PREVENTIVA: GUARNICIONES ---
+    let missingSides = false;
+    cart.forEach(item => {
+        if (item.allowedSides && item.allowedSides.length > 0 && (!item.selectedSides || item.selectedSides.length === 0)) {
+            missingSides = true;
+        }
+    });
+
+    if (missingSides) {
+        toast('🥗 ¡Opa! Te falta elegir la guarnición en alguno de tus platos.');
+        return; // Detenemos la apertura del checkout
+    }
+
     // === BLOQUEO MANUAL (ADMIN) ===
     const isShopOpenManual = localStorage.getItem('bocado_shop_open') !== 'false';
     if (!isShopOpenManual) {
