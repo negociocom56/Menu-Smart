@@ -40,7 +40,8 @@
             <div style="display: flex; align-items: center; justify-content: space-between;">
                 <div>
                     <h3 style="margin-bottom: 4px; color: var(--brand);">ESTADO DEL LOCAL</h3>
-                    <p id="shop-status-text" style="font-size: 0.85rem; color: var(--text-secondary);">Cargando estado...</p>
+                    <p id="shop-status-text" style="font-size: 0.85rem; color: var(--text-secondary);">Cargando
+                        estado...</p>
                 </div>
                 <label class="switch">
                     <input type="checkbox" id="shop-open-toggle" onchange="toggleShopStatus(this.checked)">
@@ -125,7 +126,8 @@
 
         <!-- ===== PRODUCTS SECTION ===== -->
         <section>
-            <h3 style="font-size:1rem;font-weight:700;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;">
+            <h3
+                style="font-size:1rem;font-weight:700;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;">
                 <span><i class="fas fa-utensils" style="color:var(--brand);"></i> Productos del Menú</span>
             </h3>
 
@@ -185,18 +187,22 @@
                             <label style="margin:0;flex:1;">¿ESTÁ DISPONIBLE?</label>
                             <input type="checkbox" id="p-active" checked
                                 style="width:24px;height:24px;accent-color:var(--success);cursor:pointer;">
-                            <span style="font-size:0.85rem;color:var(--text-secondary);" id="p-active-lbl">Visible</span>
+                            <span style="font-size:0.85rem;color:var(--text-secondary);"
+                                id="p-active-lbl">Visible</span>
                         </div>
 
                         <div style="background:var(--bg-muted); padding:15px; border-radius:12px; margin-bottom:20px;">
-                            <label style="font-weight:bold; color:var(--primary); display:block; margin-bottom:10px;"><i class="fas fa-salad"></i> GESTIÓN DE GUARNICIONES</label>
-                            
+                            <label style="font-weight:bold; color:var(--primary); display:block; margin-bottom:10px;"><i
+                                    class="fas fa-salad"></i> GESTIÓN DE GUARNICIONES</label>
+
                             <div class="form-group" style="margin-bottom:15px;">
                                 <label>MÁXIMO A ELEGIR</label>
                                 <input type="number" id="p-sides-limit" value="1" min="1" max="5" style="width:80px;">
                             </div>
 
-                            <label style="font-size:0.85rem; color:var(--text-secondary); display:block; margin-bottom:8px;">OPCIONES DISPONIBLES:</label>
+                            <label
+                                style="font-size:0.85rem; color:var(--text-secondary); display:block; margin-bottom:8px;">OPCIONES
+                                DISPONIBLES:</label>
                             <div id="sides-checkboxes" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
                                 <!-- Dinámico -->
                             </div>
@@ -300,8 +306,8 @@
         function updateStatusUI(isOpen) {
             const text = document.getElementById('shop-status-text');
             if (!text) return;
-            text.innerHTML = isOpen 
-                ? '<i class="fas fa-check-circle" style="color:var(--success)"></i> <strong>ABIERTO</strong> (Sigue horario automático)' 
+            text.innerHTML = isOpen
+                ? '<i class="fas fa-check-circle" style="color:var(--success)"></i> <strong>ABIERTO</strong> (Sigue horario automático)'
                 : '<i class="fas fa-times-circle" style="color:var(--danger)"></i> <strong>CERRADO MANUALMENTE</strong>';
         }
 
@@ -321,8 +327,8 @@
                 await fetch(cloudUrl, {
                     method: 'POST',
                     mode: 'no-cors',
-                    body: JSON.stringify({ 
-                        action, 
+                    body: JSON.stringify({
+                        action,
                         payload,
                         token: 'PURO_SABOR_SECURE_2024'
                     })
@@ -354,7 +360,7 @@
                 const isActive = !isInactive;
                 const stockVal = parseInt(p.stock);
                 const isAgotado = isNaN(stockVal) || stockVal <= 0;
-                
+
                 let statusBadge = '';
                 if (!isActive) statusBadge = '<span style="background:#555;color:white;padding:2px 8px;border-radius:12px;font-size:0.65rem;font-weight:bold;margin-left:8px;vertical-align:middle;">OCULTO</span>';
                 else if (isAgotado) statusBadge = '<span style="background:#e74c3c;color:white;padding:2px 8px;border-radius:12px;font-size:0.65rem;font-weight:bold;margin-left:8px;vertical-align:middle;">AGOTADO (Stock 0)</span>';
@@ -478,7 +484,7 @@
             document.getElementById('p-stock').value = p.stock !== undefined ? p.stock : 100;
             document.getElementById('p-order').value = p.sortOrder !== undefined ? p.sortOrder : 1;
             document.getElementById('p-sides-limit').value = p.sidesLimit || 1;
-            
+
             // Reset y marcar sides
             document.querySelectorAll('.side-opt').forEach(el => el.checked = false);
             if (p.allowedSides) {
@@ -487,10 +493,10 @@
                     if (allowed.includes(el.value)) el.checked = true;
                 });
             }
-            
+
             const isInactive = p.active === false || String(p.active).toUpperCase() === 'FALSE' || String(p.active).toUpperCase() === 'FALSO';
             document.getElementById('p-active').checked = !isInactive;
-            
+
             document.getElementById('product-form-title').innerHTML = '<i class="fas fa-edit"></i> Editando Producto';
             document.getElementById('product-modal').classList.add('open');
             document.body.style.overflow = 'hidden';
@@ -515,7 +521,7 @@
             document.getElementById('p-active').checked = true;
             document.getElementById('product-form-title').innerHTML = '<i class="fas fa-plus-circle"></i> Agregar Producto';
         }
-        
+
         document.getElementById('p-active').onchange = (e) => {
             document.getElementById('p-active-lbl').innerText = e.target.checked ? 'Visible en el menú' : 'Oculto (no se muestra)';
         };

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,67 +8,173 @@
     <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/3075/3075977.png" type="image/png">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body { font-family:'Outfit', sans-serif; background:#f0f0f0; padding:10px; color:#000; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: #f0f0f0;
+            padding: 10px;
+            color: #000;
+        }
 
         /* Estilo de Ticket Térmico 80mm */
         .ticket {
-            background:white; 
-            width: 80mm; /* Ancho estándar comanderas */
+            background: white;
+            width: 80mm;
+            /* Ancho estándar comanderas */
             max-width: 100%;
-            margin: 0 auto; 
+            margin: 0 auto;
             padding: 15px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
             border: 1px solid #ddd;
         }
 
-        .header { text-align:center; padding-bottom:15px; border-bottom:1px dashed #000; margin-bottom:15px; }
-        .header h1 { font-size:1.4rem; font-weight:800; text-transform: uppercase; margin-bottom: 5px; }
-        .header .tagline { font-size:0.75rem; font-weight:600; margin-bottom: 5px; }
-        .order-id { font-size: 0.7rem; color: #444; }
-
-        .items { margin-bottom:15px; }
-        .item-row {
-            display:flex; justify-content:space-between; align-items:flex-start;
-            padding:8px 0; border-bottom:1px dotted #ccc;
+        .header {
+            text-align: center;
+            padding-bottom: 15px;
+            border-bottom: 1px dashed #000;
+            margin-bottom: 15px;
         }
-        .item-row:last-child { border-bottom:none; }
-        .item-info { flex: 1; padding-right: 10px; }
-        .item-name { font-weight:700; font-size:0.9rem; text-transform: uppercase; }
-        .item-details { font-size:0.75rem; color:#333; line-height: 1.2; margin-top: 2px; }
-        .item-subtotal { font-weight:800; font-size:0.9rem; text-align:right; }
+
+        .header h1 {
+            font-size: 1.4rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .header .tagline {
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .order-id {
+            font-size: 0.7rem;
+            color: #444;
+        }
+
+        .items {
+            margin-bottom: 15px;
+        }
+
+        .item-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 8px 0;
+            border-bottom: 1px dotted #ccc;
+        }
+
+        .item-row:last-child {
+            border-bottom: none;
+        }
+
+        .item-info {
+            flex: 1;
+            padding-right: 10px;
+        }
+
+        .item-name {
+            font-weight: 700;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+        }
+
+        .item-details {
+            font-size: 0.75rem;
+            color: #333;
+            line-height: 1.2;
+            margin-top: 2px;
+        }
+
+        .item-subtotal {
+            font-weight: 800;
+            font-size: 0.9rem;
+            text-align: right;
+        }
 
         .total-section {
-            border-top:1px solid #000; padding-top:10px; margin-top:10px;
-            display:flex; justify-content:space-between; align-items:center;
+            border-top: 1px solid #000;
+            padding-top: 10px;
+            margin-top: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-        .total-label { font-size:1.1rem; font-weight:800; }
-        .total-amount { font-size:1.2rem; font-weight:800; }
+
+        .total-label {
+            font-size: 1.1rem;
+            font-weight: 800;
+        }
+
+        .total-amount {
+            font-size: 1.2rem;
+            font-weight: 800;
+        }
 
         .customer-info {
-            margin-top:20px; padding:10px; border: 1px solid #000;
-            font-size:0.8rem; line-height:1.5;
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #000;
+            font-size: 0.8rem;
+            line-height: 1.5;
         }
-        .customer-info strong { text-transform: uppercase; font-size: 0.7rem; color: #555; }
+
+        .customer-info strong {
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            color: #555;
+        }
 
         .thanks {
-            text-align:center; margin-top:20px; font-size:0.75rem;
-            font-weight: 600; border-top: 1px dashed #000; padding-top: 10px;
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border-top: 1px dashed #000;
+            padding-top: 10px;
         }
 
         .btn-print {
-            display:block; width:100%; max-width: 80mm; margin: 20px auto;
-            padding:14px; background:#000; color:white; text-align:center;
-            text-decoration:none; border-radius:8px; font-weight:700;
+            display: block;
+            width: 100%;
+            max-width: 80mm;
+            margin: 20px auto;
+            padding: 14px;
+            background: #000;
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 700;
         }
 
         @media print {
-            body { background:white; padding:0; }
-            .ticket { box-shadow:none; border:none; width: 100%; margin: 0; padding: 5px; }
-            .btn-print { display:none; }
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .ticket {
+                box-shadow: none;
+                border: none;
+                width: 100%;
+                margin: 0;
+                padding: 5px;
+            }
+
+            .btn-print {
+                display: none;
+            }
         }
     </style>
 </head>
+
 <body>
 
     <div class="ticket" id="ticket">
@@ -159,8 +266,8 @@
                 </div>
             `).join('');
 
-            // Add Options (Cutlery / Priority)
-            if (data.opts.cubiertos || data.opts.prio) {
+            // Add Options (Cutlery / Priority / Zona Extendida)
+            if (data.opts.cubiertos || data.opts.prio || data.opts.zonaExtendida || data.opts.zonaPrincipal) {
                 itemsEl.innerHTML += '<div style="margin-top:10px; padding-top:10px; border-top:1px dashed #000;"></div>';
                 if (data.opts.cubiertos) {
                     itemsEl.innerHTML += `
@@ -175,6 +282,21 @@
                         <div class="item-row" style="border:none; padding:2px 0;">
                             <div class="item-info"><div class="item-name" style="font-size:0.8rem;">🚀 ENVÍO PRIORITARIO</div></div>
                             <div class="item-subtotal" style="font-size:0.8rem;">$2.000</div>
+                        </div>
+                    `;
+                }
+                if (data.opts.zonaExtendida) {
+                    itemsEl.innerHTML += `
+                        <div class="item-row" style="border:none; padding:2px 0;">
+                            <div class="item-info"><div class="item-name" style="font-size:0.8rem;">🛵 ZONA EXTENDIDA</div></div>
+                            <div class="item-subtotal" style="font-size:0.8rem;">$700</div>
+                        </div>
+                    `;
+                } else if (data.opts.zonaPrincipal) {
+                    itemsEl.innerHTML += `
+                        <div class="item-row" style="border:none; padding:2px 0;">
+                            <div class="item-info"><div class="item-name" style="font-size:0.8rem;">📍 ÁREA PRINCIPAL</div></div>
+                            <div class="item-subtotal" style="font-size:0.8rem;">$0</div>
                         </div>
                     `;
                 }
@@ -197,4 +319,5 @@
         init();
     </script>
 </body>
+
 </html>

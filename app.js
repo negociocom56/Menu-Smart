@@ -443,7 +443,7 @@ function openCheckout() {
         return;
     }
 
-    // === CIERRE AUTOMÁTICO (Hora Argentina) ===
+    /* === CIERRE AUTOMÁTICO (Hora Argentina) ===
     const now = new Date();
     const argTimeStr = now.toLocaleString('en-US', { timeZone: 'America/Argentina/Buenos_Aires' });
     const argDate = new Date(argTimeStr); // Parse as local to extract hours/minutes
@@ -452,6 +452,7 @@ function openCheckout() {
         toast('El local se encuentra cerrado. (Abre a las 10:00)');
         return;
     }
+    */
 
     const ov = document.getElementById('checkout-overlay');
     ov.classList.add('open');
@@ -471,9 +472,10 @@ function openCheckout() {
     let total = cart.reduce((a, c) => a + c.price * c.qty, 0);
     if (document.getElementById('opt-cubiertos')?.checked) total += 200;
     if (document.getElementById('opt-envio-prio')?.checked) total += 2000;
+    if (document.getElementById('cust-delivery')?.value === 'delivery' && document.getElementById('cust-zone')?.value === 'extendida') total += 700;
     document.getElementById('checkout-total').innerText = total.toLocaleString('es-AR');
 
-    document.getElementById('checkout-items').innerHTML = cart.map(item => `
+    document.getElementById('checkout-items').innerHTML = cart.map((item, index) => `
         <div class="order-item">
             <img src="${item.img}" alt="" onerror="this.src='https://placehold.co/50x50/f3eeea/a89e96?text=?'">
             <div class="item-info">
@@ -482,11 +484,25 @@ function openCheckout() {
                 ${item.note ? `<div class="item-note">📝 Nota: ${item.note}</div>` : ''}
                 <span>$${item.price.toLocaleString('es-AR')} c/u</span>
             </div>
-            <div class="item-price">$${(item.price * item.qty).toLocaleString('es-AR')}</div>
+            <div class="item-price" style="display:flex; flex-direction:column; align-items:flex-end;">
+                <span>$${(item.price * item.qty).toLocaleString('es-AR')}</span>
+                <button type="button" onclick="removeFromCartIndex(${index})" style="background:none; border:none; color:#e74c3c; margin-top:5px; cursor:pointer; font-size:1.1rem; padding:5px;" title="Eliminar del pedido"><i class="fas fa-trash"></i></button>
+            </div>
         </div>
     `).join('');
 }
 
+function removeFromCartIndex(index) {
+    cart.splice(index, 1);
+    localStorage.setItem('bocado_cart', JSON.stringify(cart));
+    refresh();
+    
+    if (cart.length === 0) {
+        document.getElementById('checkout-overlay').classList.remove('open');
+    } else {
+        openCheckout();
+    }
+}
 // ---- 10. FORM VALIDATION ----
 function validateForm() {
     const name = document.getElementById('cust-name');
@@ -523,11 +539,25 @@ function validateForm() {
     }
 
     // Address if delivery
-    if (delivery === 'delivery' && (!addr || addr.value.trim().length < 5)) {
-        if (addr) addr.style.borderColor = '#e74c3c';
-        ok = false;
+    if (delivery === 'delivery') {
+        const zone = document.getElementById('cust-zone');
+        if (!zone || !zone.value || zone.value === '') {
+            if (zone) zone.style.borderColor = '#e74c3c';
+            ok = false;
+        } else {
+            if (zone) zone.style.borderColor = '';
+        }
+
+        if (!addr || addr.value.trim().length < 5) {
+            if (addr) addr.style.borderColor = '#e74c3c';
+            ok = false;
+        } else {
+            if (addr) addr.style.borderColor = '';
+        }
     } else {
         if (addr) addr.style.borderColor = '';
+        const zone = document.getElementById('cust-zone');
+        if (zone) zone.style.borderColor = '';
     }
 
     // --- NUEVA VALIDACIÓN: GUARNICIONES EN EL CARRITO ---
@@ -645,10 +675,15 @@ async function submitOrder(e) {
 
     const optCubiertos = document.getElementById('opt-cubiertos')?.checked;
     const optEnvioPrio = document.getElementById('opt-envio-prio')?.checked;
+    const isDelivery = delivery === 'delivery';
+    const zoneValue = document.getElementById('cust-zone')?.value;
+    const isZonaExtendida = isDelivery && zoneValue === 'extendida';
+    const isZonaPrincipal = isDelivery && zoneValue === 'principal';
 
     let total = cart.reduce((a, c) => a + c.price * c.qty, 0);
     if (optCubiertos) total += 200;
     if (optEnvioPrio) total += 2000;
+    if (isZonaExtendida) total += 700;
 
     const orderId = `${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${String(Date.now()).slice(-6)}`;
 
@@ -663,6 +698,8 @@ async function submitOrder(e) {
 
     if (optCubiertos) msg += `🍴 Cubiertos (+ $200)\n`;
     if (optEnvioPrio) msg += `🚀 Envío Prioritario (+ $2000)\n`;
+    if (isZonaExtendida) msg += `🛵 Zona Extendida (+ $700)\n`;
+    else if (isZonaPrincipal) msg += `📍 Área Principal (Sin cargo extra)\n`;
 
     msg += `💰 *Total: $${total.toLocaleString('es-AR')}* $$$\n\n`;
     msg += `👤 Nombre: ${name}\n`;
@@ -696,7 +733,9 @@ async function submitOrder(e) {
                     time: timeRaw,
                     opts: {
                         cubiertos: optCubiertos,
-                        prio: optEnvioPrio
+                        prio: optEnvioPrio,
+                        zonaExtendida: isZonaExtendida,
+                        zonaPrincipal: isZonaPrincipal
                     },
                     it: cart.map(item => ({
                         n: item.name, q: item.qty, p: item.price,
@@ -768,11 +807,13 @@ function setupEvents() {
             let total = cart.reduce((a, c) => a + c.price * c.qty, 0);
             if (document.getElementById('opt-cubiertos')?.checked) total += 200;
             if (document.getElementById('opt-envio-prio')?.checked) total += 2000;
+            if (document.getElementById('cust-delivery')?.value === 'delivery' && document.getElementById('cust-zone')?.value === 'extendida') total += 700;
             totalElem.innerText = total.toLocaleString('es-AR');
         }
     };
     document.getElementById('opt-cubiertos')?.addEventListener('change', updateCheckoutTotal);
     document.getElementById('opt-envio-prio')?.addEventListener('change', updateCheckoutTotal);
+    document.getElementById('cust-zone')?.addEventListener('change', updateCheckoutTotal);
 
     document.getElementById('open-checkout')?.addEventListener('click', openCheckout);
     document.getElementById('cart-header-btn')?.addEventListener('click', () => {
@@ -806,6 +847,7 @@ function setupEvents() {
             optPoint.disabled = false;
             optPoint.style.display = 'block';
         }
+        updateCheckoutTotal();
     });
 
     document.getElementById('cust-payment')?.addEventListener('change', e => {
