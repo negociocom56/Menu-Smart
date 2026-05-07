@@ -738,7 +738,7 @@ async function submitOrder(e) {
                         zonaPrincipal: isZonaPrincipal
                     },
                     it: cart.map(item => ({
-                        n: item.name, q: item.qty, p: item.price,
+                        n: item.name, q: item.qty, p: item.price, c: item.category || 'Varios',
                         o: item.selectedSides && item.selectedSides.length > 0 
                            ? `[${item.selectedSides.join(', ')}] ${item.note || ''}` 
                            : (item.note || '')

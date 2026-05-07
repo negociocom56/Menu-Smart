@@ -230,6 +230,7 @@
                         n: item.n,
                         q: item.q,
                         p: item.p,
+                        c: item.c || '',
                         note: item.o || ''
                     }))
                 };
@@ -258,6 +259,7 @@
             itemsEl.innerHTML = data.items.map(i => `
                 <div class="item-row">
                     <div class="item-info">
+                        ${i.c ? `<div style="font-size: 0.6rem; color: #666; text-transform: uppercase; margin-bottom: 2px;">• ${i.c}</div>` : ''}
                         <div class="item-name">${i.n}</div>
                         ${i.note ? `<div class="item-details">${i.note}</div>` : ''}
                         <div class="item-details">$${i.p.toLocaleString('es-AR')} × ${i.q}</div>
