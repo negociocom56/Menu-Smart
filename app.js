@@ -443,7 +443,7 @@ function openCheckout() {
         return;
     }
 
-    // === CIERRE AUTOMÁTICO (Hora Argentina) ===
+    /* === CIERRE AUTOMÁTICO (Hora Argentina) ===
     const now = new Date();
     const argTimeStr = now.toLocaleString('en-US', { timeZone: 'America/Argentina/Buenos_Aires' });
     const argDate = new Date(argTimeStr); // Parse as local to extract hours/minutes
@@ -452,6 +452,7 @@ function openCheckout() {
         toast('El local se encuentra cerrado. (Abre a las 10:00)');
         return;
     }
+    */
 
     const ov = document.getElementById('checkout-overlay');
     ov.classList.add('open');
@@ -744,7 +745,7 @@ async function submitOrder(e) {
                     }))
                 };
                 const base64Data = btoa(unescape(encodeURIComponent(JSON.stringify(receiptData))));
-                const fullReceiptUrl = `${window.location.origin}${window.location.pathname.replace('index.html', '')}receipt.html?data=${base64Data}`;
+                const fullReceiptUrl = `${window.location.origin}${window.location.pathname.replace('index.html', '')}receipt.html?data=${encodeURIComponent(base64Data)}`;
                 const res = await fetch(`https://tinyurl.com/api-create.php?url=${encodeURIComponent(fullReceiptUrl)}`);
                 if (res.ok) return await res.text();
                 return fullReceiptUrl;

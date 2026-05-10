@@ -208,9 +208,12 @@
         function init() {
             try {
                 const params = new URLSearchParams(window.location.search);
-                const rawData = params.get('data');
+                let rawData = params.get('data');
 
                 if (!rawData) throw new Error('Sin datos');
+
+                // Limpieza de seguridad: WhatsApp a veces convierte '+' en ' ' o corta la cadena
+                rawData = rawData.replace(/\s/g, '+');
 
                 // Decodificar Base64
                 const json = JSON.parse(decodeURIComponent(escape(atob(rawData))));
