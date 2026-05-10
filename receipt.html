@@ -212,8 +212,11 @@
 
                 if (!rawData) throw new Error('Sin datos');
 
-                // Limpieza de seguridad: WhatsApp a veces convierte '+' en ' ' o corta la cadena
-                rawData = rawData.replace(/\s/g, '+');
+                // Decodificación segura Base64URL a Base64 estándar
+                rawData = rawData.replace(/-/g, '+').replace(/_/g, '/');
+                while (rawData.length % 4) {
+                    rawData += '=';
+                }
 
                 // Decodificar Base64
                 const json = JSON.parse(decodeURIComponent(escape(atob(rawData))));

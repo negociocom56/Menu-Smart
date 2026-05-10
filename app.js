@@ -744,11 +744,26 @@ async function submitOrder(e) {
                            : (item.note || '')
                     }))
                 };
-                const base64Data = btoa(unescape(encodeURIComponent(JSON.stringify(receiptData))));
-                const fullReceiptUrl = `${window.location.origin}${window.location.pathname.replace('index.html', '')}receipt.html?data=${encodeURIComponent(base64Data)}`;
-                const res = await fetch(`https://tinyurl.com/api-create.php?url=${encodeURIComponent(fullReceiptUrl)}`);
-                if (res.ok) return await res.text();
-                return fullReceiptUrl;
+                let base64Data = btoa(unescape(encodeURIComponent(JSON.stringify(receiptData))));
+                base64Data = base64Data.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+                
+                const fullReceiptUrl = `${window.location.origin}${window.location.pathname.replace('index.html', '')}receipt.html?data=${base64Data}`;
+                
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 3500);
+                
+                try {
+                    const res = await fetch(`https://tinyurl.com/api-create.php?url=${encodeURIComponent(fullReceiptUrl)}`, { signal: controller.signal });
+                    clearTimeout(timeoutId);
+                    if (res.ok) {
+                        const shortUrl = await res.text();
+                        return shortUrl || fullReceiptUrl;
+                    }
+                    return fullReceiptUrl;
+                } catch (e) {
+                    clearTimeout(timeoutId);
+                    return fullReceiptUrl;
+                }
             })()
         ]);
         
