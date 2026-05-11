@@ -729,40 +729,47 @@ async function submitOrder(e) {
                 const receiptData = {
                     i: orderId, n: name, p: phone, t: total, m: payment, d: delivery,
                     a: delivery === 'delivery' ? address : 'Paso a Retirar',
-                    time: timeRaw,
-                    opts: {
-                        cubiertos: optCubiertos,
-                        prio: optEnvioPrio,
-                        zonaExtendida: isZonaExtendida,
-                        zonaPrincipal: isZonaPrincipal
+                    h: timeRaw,
+                    o: {
+                        c: optCubiertos,
+                        p: optEnvioPrio,
+                        ze: isZonaExtendida,
+                        zp: isZonaPrincipal
                     },
                     it: cart.map(item => ({
-                        n: item.name, q: item.qty, p: item.price, c: item.category || 'Varios',
+                        n: item.name, q: item.qty, p: item.price, c: item.category || '',
                         o: item.selectedSides && item.selectedSides.length > 0 
                            ? `[${item.selectedSides.join(', ')}] ${item.note || ''}` 
                            : (item.note || '')
                     }))
                 };
+
                 let base64Data = btoa(unescape(encodeURIComponent(JSON.stringify(receiptData))));
                 base64Data = base64Data.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
                 
                 const fullReceiptUrl = `${window.location.origin}${window.location.pathname.replace('index.html', '')}receipt.html?data=${base64Data}`;
                 
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 3500);
-                
-                try {
-                    const res = await fetch(`https://tinyurl.com/api-create.php?url=${encodeURIComponent(fullReceiptUrl)}`, { signal: controller.signal });
-                    clearTimeout(timeoutId);
-                    if (res.ok) {
-                        const shortUrl = await res.text();
-                        return shortUrl || fullReceiptUrl;
+                // --- MULTI-SHORTENER ROBUSTO ---
+                const shorteners = [
+                    `https://is.gd/create.php?format=simple&url=${encodeURIComponent(fullReceiptUrl)}`,
+                    `https://tinyurl.com/api-create.php?url=${encodeURIComponent(fullReceiptUrl)}`
+                ];
+
+                for (const sUrl of shorteners) {
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 3000);
+                    try {
+                        const res = await fetch(sUrl, { signal: controller.signal });
+                        clearTimeout(timeoutId);
+                        if (res.ok) {
+                            const short = await res.text();
+                            if (short && short.startsWith('http')) return short;
+                        }
+                    } catch (e) {
+                        clearTimeout(timeoutId);
                     }
-                    return fullReceiptUrl;
-                } catch (e) {
-                    clearTimeout(timeoutId);
-                    return fullReceiptUrl;
                 }
+                return fullReceiptUrl;
             })()
         ]);
         
