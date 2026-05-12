@@ -33,7 +33,9 @@ const GUARNICIONES = [
     'Papas Fritas',
     'Fideos al Pesto',
     'Fideos con Queso',
-    'Fideos con Manteca'
+    'Fideos con Manteca',
+    'Papas Rústicas',
+    'Ensalada de Papa y Huevo'
 ];
 
 // ===================================================
@@ -94,8 +96,8 @@ async function cloudSave(action, payload) {
         method: 'POST',
         mode: 'no-cors',
         headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify({ 
-            action, 
+        body: JSON.stringify({
+            action,
             payload,
             token: 'PURO_SABOR_SECURE_2024'
         })
@@ -241,7 +243,7 @@ function renderProducts() {
 
     // Definir orden de categorías
     const categoryOrder = ['Menú Trabajador', 'Menú Habitual', 'Platos Principales', 'Combos'];
-    
+
     // Agrupar por categoría
     const grouped = {};
     list.forEach(p => {
@@ -251,7 +253,7 @@ function renderProducts() {
 
     // Obtener todas las categorías presentes
     let categoriesPresent = Object.keys(grouped);
-    
+
     // Ordenar las categorías: primero las del categoryOrder, luego el resto alfabéticamente
     categoriesPresent.sort((a, b) => {
         let indexA = categoryOrder.indexOf(a);
@@ -265,11 +267,11 @@ function renderProducts() {
     let html = '';
     categoriesPresent.forEach(cat => {
         html += `<h2 class="category-title" style="grid-column: 1/-1; margin-top: 30px; margin-bottom: 15px; font-size: 1.5rem; color: var(--primary); border-bottom: 2px solid var(--primary-light); padding-bottom: 8px; width: 100%;">${cat}</h2>`;
-        
+
         grouped[cat].forEach(p => {
             const inCart = cart.find(c => String(c.id) === String(p.id));
             const finalImgUrl = getDirectImageUrl(p.img);
-            
+
             const stockVal = parseInt(p.stock);
             const isAgotado = isNaN(stockVal) || stockVal <= 0;
             const isAvailable = !isAgotado;
@@ -380,12 +382,12 @@ function updateSide(id, val) {
 function toggleSide(id, side) {
     const item = cart.find(c => String(c.id) === String(id));
     if (!item) return;
-    
+
     const p = products.find(x => String(x.id) === String(id));
     const limit = parseInt(p?.sidesLimit) || 1;
-    
+
     if (!item.selectedSides) item.selectedSides = [];
-    
+
     if (item.selectedSides.includes(side)) {
         item.selectedSides = item.selectedSides.filter(s => s !== side);
     } else {
@@ -393,7 +395,7 @@ function toggleSide(id, side) {
             item.selectedSides.push(side);
         } else {
             toast(`Máximo ${limit} guarniciones`);
-            renderProducts(); 
+            renderProducts();
             return;
         }
     }
@@ -495,7 +497,7 @@ function removeFromCartIndex(index) {
     cart.splice(index, 1);
     localStorage.setItem('bocado_cart', JSON.stringify(cart));
     refresh();
-    
+
     if (cart.length === 0) {
         document.getElementById('checkout-overlay').classList.remove('open');
     } else {
@@ -720,7 +722,7 @@ async function submitOrder(e) {
 
     try {
         const deductPayload = cart.map(item => ({ id: item.id, qty: item.qty }));
-        
+
         // --- EJECUCIÓN EN PARALELO (MÁXIMA VELOCIDAD) ---
         // Descontamos stock y generamos el link corto al mismo tiempo
         const [cloudRes, shortRes] = await Promise.allSettled([
@@ -738,17 +740,17 @@ async function submitOrder(e) {
                     },
                     it: cart.map(item => ({
                         n: item.name, q: item.qty, p: item.price, c: item.category || '',
-                        o: item.selectedSides && item.selectedSides.length > 0 
-                           ? `[${item.selectedSides.join(', ')}] ${item.note || ''}` 
-                           : (item.note || '')
+                        o: item.selectedSides && item.selectedSides.length > 0
+                            ? `[${item.selectedSides.join(', ')}] ${item.note || ''}`
+                            : (item.note || '')
                     }))
                 };
 
                 let base64Data = btoa(unescape(encodeURIComponent(JSON.stringify(receiptData))));
                 base64Data = base64Data.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-                
+
                 const fullReceiptUrl = `${window.location.origin}${window.location.pathname.replace('index.html', '')}receipt.html?data=${base64Data}`;
-                
+
                 // --- MULTI-SHORTENER ROBUSTO ---
                 const shorteners = [
                     `https://is.gd/create.php?format=simple&url=${encodeURIComponent(fullReceiptUrl)}`,
@@ -772,7 +774,7 @@ async function submitOrder(e) {
                 return fullReceiptUrl;
             })()
         ]);
-        
+
         // Si el descuento de stock falló, lanzamos error para que no se limpie el carrito
         if (cloudRes.status === 'rejected') {
             throw new Error("Cloud save failed: " + cloudRes.reason);
@@ -781,7 +783,7 @@ async function submitOrder(e) {
         if (shortRes.status === 'fulfilled' && shortRes.value) {
             msg += `\n🧾 *Tu Recibo Digital:* ${shortRes.value}\n`;
         }
-        
+
         // Recalcular waUrl con el link del recibo si se generó
         const waUrl = `https://wa.me/${shopNum}?text=${encodeURIComponent(msg)}`;
 
@@ -796,7 +798,7 @@ async function submitOrder(e) {
             }
         });
         localStorage.setItem('bocado_products', JSON.stringify(products));
-        
+
         cart = [];
         localStorage.removeItem('bocado_cart');
         refresh();
@@ -824,7 +826,7 @@ function setupEvents() {
 
     const updateCheckoutTotal = () => {
         const totalElem = document.getElementById('checkout-total');
-        if(totalElem) {
+        if (totalElem) {
             let total = cart.reduce((a, c) => a + c.price * c.qty, 0);
             if (document.getElementById('opt-cubiertos')?.checked) total += 200;
             if (document.getElementById('opt-envio-prio')?.checked) total += 2000;
