@@ -39,9 +39,9 @@ const GUARNICIONES = [
 ];
 
 // ===================================================
-// CONFIGURACIÓN MAESTRA (Sólo para Synergy Dev)
+// CONFIGURACIÓN MAESTRA — API Unificada (MySQL/Hostinger)
 // ===================================================
-const CLOUD_URL = 'https://script.google.com/macros/s/AKfycbwVXPXZGGMozf2E213UnxdmlBwr9TSX2cmkCxMXgpZpO9zNo6DrWYzd7-5MM050jOyJ/exec'; // Pega aquí tu URL de Google Apps Script (terminada en /exec)
+const CLOUD_URL = 'https://synergydev.com.ar/PScomanda/api.php';
 // ===================================================
 
 // ---- 4. INIT ----
@@ -52,7 +52,7 @@ async function init() {
     setupEvents();
     startCarousel();
 
-    // Intentar carga desde la nube si hay URL configurada
+    // Cargar datos desde la API unificada
     if (CLOUD_URL) {
         await syncFromCloud();
     }
@@ -60,7 +60,8 @@ async function init() {
 
 async function syncFromCloud() {
     try {
-        const res = await fetch(CLOUD_URL);
+        const url = `${CLOUD_URL}?path=menu_data&_t=${Date.now()}`;
+        const res = await fetch(url);
         const data = await res.json();
         if (data.products) {
             products = data.products;
@@ -91,17 +92,12 @@ async function syncFromCloud() {
 
 async function cloudSave(action, payload) {
     if (!CLOUD_URL) return;
-    // Usamos mode: no-cors y text/plain para saltar las restricciones de Google
-    await fetch(CLOUD_URL, {
+    const res = await fetch(CLOUD_URL, {
         method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify({
-            action,
-            payload,
-            token: 'PURO_SABOR_SECURE_2024'
-        })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action, payload })
     });
+    return await res.json();
 }
 
 // ==== KILL SWITCH (SISTEMA DE SEGURIDAD SAAS) ====
@@ -724,9 +720,44 @@ async function submitOrder(e) {
         const deductPayload = cart.map(item => ({ id: item.id, qty: item.qty }));
 
         // --- EJECUCIÓN EN PARALELO (MÁXIMA VELOCIDAD) ---
-        // Descontamos stock y generamos el link corto al mismo tiempo
-        const [cloudRes, shortRes] = await Promise.allSettled([
+        // 1. Descontamos stock
+        // 2. Creamos el pedido en MySQL (aparece en la Comanda)
+        // 3. Generamos el link corto del recibo
+        const [stockRes, orderRes, shortRes] = await Promise.allSettled([
             cloudSave('deductStock', deductPayload),
+            // === NUEVO: Crear pedido en la base de datos unificada ===
+            (async () => {
+                const orderData = {
+                    action: 'crear_pedido_menu',
+                    items: cart.map(item => ({
+                        id: item.id,
+                        name: item.name,
+                        price: item.price,
+                        qty: item.qty,
+                        note: item.note || '',
+                        selectedSides: item.selectedSides || []
+                    })),
+                    nombre: name,
+                    celular: phone,
+                    tipoEntrega: delivery === 'delivery' ? 'envio' : 'retira',
+                    domicilio: delivery === 'delivery' ? address : '',
+                    metodoPago: paymentRaw,
+                    horario: timeRaw,
+                    observaciones: '',
+                    extras: {
+                        cubiertos: optCubiertos,
+                        envioPrio: optEnvioPrio,
+                        zonaExtendida: isZonaExtendida
+                    }
+                };
+                const res = await fetch(CLOUD_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(orderData)
+                });
+                return await res.json();
+            })(),
+            // === Recibo digital ===
             (async () => {
                 const receiptData = {
                     i: orderId, n: name, p: phone, t: total, m: payment, d: delivery,
@@ -775,13 +806,20 @@ async function submitOrder(e) {
             })()
         ]);
 
-        // Si el descuento de stock falló, lanzamos error para que no se limpie el carrito
-        if (cloudRes.status === 'rejected') {
-            throw new Error("Cloud save failed: " + cloudRes.reason);
+        // Log del resultado del pedido en MySQL
+        if (orderRes.status === 'fulfilled' && orderRes.value?.success) {
+            console.log('✅ Pedido registrado en Comanda:', orderRes.value.id);
+        } else {
+            console.warn('⚠️ No se pudo registrar en Comanda (el pedido sigue por WhatsApp):', orderRes.reason || orderRes.value?.error);
         }
 
         if (shortRes.status === 'fulfilled' && shortRes.value) {
             msg += `\n🧾 *Tu Recibo Digital:* ${shortRes.value}\n`;
+        }
+
+        // Agregar ID del pedido en comanda al mensaje si se creó
+        if (orderRes.status === 'fulfilled' && orderRes.value?.id) {
+            msg += `\n📋 *ID Comanda:* ${orderRes.value.id}\n`;
         }
 
         // Recalcular waUrl con el link del recibo si se generó
@@ -807,7 +845,7 @@ async function submitOrder(e) {
 
         window.location.href = waUrl;
     } catch (e) {
-        console.error("Error al descontar stock:", e);
+        console.error("Error al procesar pedido:", e);
         toast('❌ Error de conexión. Intenta de nuevo.');
     } finally {
         if (btn) {
