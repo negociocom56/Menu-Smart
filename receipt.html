@@ -283,11 +283,11 @@
             // Add Options (Cutlery / Priority / Zona Extendida)
             if (data.opts.cubiertos || data.opts.prio || data.opts.zonaExtendida || data.opts.zonaPrincipal) {
                 itemsEl.innerHTML += '<div style="margin-top:10px; padding-top:10px; border-top:1px dashed #000;"></div>';
-                if (data.opts.cubiertos) {
+                if (data.opts.cubiertos > 0) {
                     itemsEl.innerHTML += `
                         <div class="item-row" style="border:none; padding:2px 0;">
-                            <div class="item-info"><div class="item-name" style="font-size:0.8rem;">🍴 INCLUIR CUBIERTOS</div></div>
-                            <div class="item-subtotal" style="font-size:0.8rem;">$200</div>
+                            <div class="item-info"><div class="item-name" style="font-size:0.8rem;">🍴 INCLUIR CUBIERTOS x${data.opts.cubiertos}</div></div>
+                            <div class="item-subtotal" style="font-size:0.8rem;">$${(200 * data.opts.cubiertos).toLocaleString('es-AR')}</div>
                         </div>
                     `;
                 }

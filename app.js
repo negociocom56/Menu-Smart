@@ -463,7 +463,8 @@ function openCheckout() {
     }
 
     let total = cart.reduce((a, c) => a + c.price * c.qty, 0);
-    if (document.getElementById('opt-cubiertos')?.checked) total += 200;
+    const cantCubiertos = parseInt(document.getElementById('opt-cubiertos')?.value || 0);
+    if (cantCubiertos > 0) total += 200 * cantCubiertos;
     if (document.getElementById('opt-envio-prio')?.checked) total += 2000;
     if (document.getElementById('cust-delivery')?.value === 'delivery' && document.getElementById('cust-zone')?.value === 'extendida') total += 700;
     document.getElementById('checkout-total').innerText = total.toLocaleString('es-AR');
@@ -666,7 +667,7 @@ async function submitOrder(e) {
     };
     const payment = paymentNames[paymentRaw] || paymentRaw;
 
-    const optCubiertos = document.getElementById('opt-cubiertos')?.checked;
+    const cantCubiertos = parseInt(document.getElementById('opt-cubiertos')?.value || 0);
     const optEnvioPrio = document.getElementById('opt-envio-prio')?.checked;
     const isDelivery = delivery === 'delivery';
     const zoneValue = document.getElementById('cust-zone')?.value;
@@ -674,7 +675,7 @@ async function submitOrder(e) {
     const isZonaPrincipal = isDelivery && zoneValue === 'principal';
 
     let total = cart.reduce((a, c) => a + c.price * c.qty, 0);
-    if (optCubiertos) total += 200;
+    if (cantCubiertos > 0) total += 200 * cantCubiertos;
     if (optEnvioPrio) total += 2000;
     if (isZonaExtendida) total += 700;
 
@@ -689,7 +690,7 @@ async function submitOrder(e) {
         msg += `\n`;
     });
 
-    if (optCubiertos) msg += `🍴 Cubiertos (+ $200)\n`;
+    if (cantCubiertos > 0) msg += `🍴 Cubiertos x${cantCubiertos} (+ $${200 * cantCubiertos})\n`;
     if (optEnvioPrio) msg += `🚀 Envío Prioritario (+ $2000)\n`;
     if (isZonaExtendida) msg += `🛵 Zona Extendida (+ $700)\n`;
     else if (isZonaPrincipal) msg += `📍 Área Principal (Sin cargo extra)\n`;
@@ -741,7 +742,7 @@ async function submitOrder(e) {
                     horario: timeRaw,
                     observaciones: '',
                     extras: {
-                        cubiertos: optCubiertos,
+                        cubiertos: cantCubiertos,
                         envioPrio: optEnvioPrio,
                         zonaExtendida: isZonaExtendida
                     }
@@ -760,7 +761,7 @@ async function submitOrder(e) {
                     a: delivery === 'delivery' ? address : 'Paso a Retirar',
                     h: timeRaw,
                     o: {
-                        c: optCubiertos,
+                        c: cantCubiertos,
                         p: optEnvioPrio,
                         ze: isZonaExtendida,
                         zp: isZonaPrincipal
@@ -862,13 +863,14 @@ function setupEvents() {
         const totalElem = document.getElementById('checkout-total');
         if (totalElem) {
             let total = cart.reduce((a, c) => a + c.price * c.qty, 0);
-            if (document.getElementById('opt-cubiertos')?.checked) total += 200;
+            const cantCubiertos = parseInt(document.getElementById('opt-cubiertos')?.value || 0);
+            if (cantCubiertos > 0) total += 200 * cantCubiertos;
             if (document.getElementById('opt-envio-prio')?.checked) total += 2000;
             if (document.getElementById('cust-delivery')?.value === 'delivery' && document.getElementById('cust-zone')?.value === 'extendida') total += 700;
             totalElem.innerText = total.toLocaleString('es-AR');
         }
     };
-    document.getElementById('opt-cubiertos')?.addEventListener('change', updateCheckoutTotal);
+    document.getElementById('opt-cubiertos')?.addEventListener('input', updateCheckoutTotal);
     document.getElementById('opt-envio-prio')?.addEventListener('change', updateCheckoutTotal);
     document.getElementById('cust-zone')?.addEventListener('change', updateCheckoutTotal);
 
