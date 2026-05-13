@@ -34,17 +34,44 @@
         </div>
     </div>
     <script>
-        document.getElementById('login-form').onsubmit = (e) => {
+        document.getElementById('login-form').onsubmit = async (e) => {
             e.preventDefault();
             const u = document.getElementById('user').value;
             const p = document.getElementById('pass').value;
+            const errorMsg = document.getElementById('error-msg');
             
-            // Credenciales ofuscadas (b3BlcmFkb3I= = operador, Y29tMDI2 = com026)
-            if (btoa(u) === 'b3BlcmFkb3I=' && btoa(p) === 'Y29tMDI2') {
-                sessionStorage.setItem('bocado_auth', 'true');
-                window.location.href = 'admin.html';
-            } else {
-                document.getElementById('error-msg').style.display = 'block';
+            errorMsg.style.display = 'none';
+            const btn = document.querySelector('.btn-save');
+            const originalText = btn.innerText;
+            btn.innerText = 'CARGANDO...';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('https://synergydev.com.ar/PScomanda/api.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'login',
+                        username: u,
+                        password: p
+                    })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    sessionStorage.setItem('bocado_auth', 'true');
+                    sessionStorage.setItem('bocado_user_role', data.rol || 'operador');
+                    window.location.href = 'admin.html';
+                } else {
+                    errorMsg.innerText = data.error || 'Usuario o contraseña incorrectos.';
+                    errorMsg.style.display = 'block';
+                }
+            } catch (error) {
+                errorMsg.innerText = 'Error de conexión con el servidor.';
+                errorMsg.style.display = 'block';
+            } finally {
+                btn.innerText = originalText;
+                btn.disabled = false;
             }
         };
     </script>

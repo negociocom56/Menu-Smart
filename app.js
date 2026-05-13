@@ -27,16 +27,7 @@ let map = null;
 let marker = null;
 let currentLat = -26.830419; // Default center (Tucuman)
 let currentLng = -65.203794;
-const GUARNICIONES = [
-    'Arroz Amarillo',
-    'Ensalada Mixta',
-    'Papas Fritas',
-    'Fideos al Pesto',
-    'Fideos con Queso',
-    'Fideos con Manteca',
-    'Papas Rústicas',
-    'Ensalada de Papa y Huevo'
-];
+let GUARNICIONES = [];
 
 // ===================================================
 // CONFIGURACIÓN MAESTRA — API Unificada (MySQL/Hostinger)
@@ -81,6 +72,9 @@ async function syncFromCloud() {
                 const isOpen = shopOpen.value === true || String(shopOpen.value).toLowerCase() === 'true';
                 localStorage.setItem('bocado_shop_open', isOpen);
             }
+        }
+        if (data.guarniciones && data.guarniciones.length > 0) {
+            GUARNICIONES = data.guarniciones.map(g => g.nombre);
         }
         renderBanners();
         renderCategories();

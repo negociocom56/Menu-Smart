@@ -221,21 +221,12 @@
     <script>
         // --- Init & State ---
         // ===================================================
-        // CONFIGURACIÓN MAESTRA (Sólo para Synergy Dev)
+        // CONFIGURACIÓN MAESTRA — API Unificada
         // ===================================================
-        const cloudUrl = 'https://script.google.com/macros/s/AKfycbwVXPXZGGMozf2E213UnxdmlBwr9TSX2cmkCxMXgpZpO9zNo6DrWYzd7-5MM050jOyJ/exec';
+        const cloudUrl = 'https://synergydev.com.ar/PScomanda/api.php';
         // ===================================================
 
-        const SIDES_LIST = [
-            'Arroz Amarillo',
-            'Ensalada Mixta',
-            'Papas Fritas',
-            'Fideos al Pesto',
-            'Fideos con Queso',
-            'Fideos con Manteca',
-            'Papas Rústicas',
-            'Ensalada de Papa y Huevo'
-        ];
+        let SIDES_LIST = [];
 
         localStorage.removeItem('bocado_schedules'); // FLUSH CORRUPT DATES
         let products = JSON.parse(localStorage.getItem('bocado_products')) || [];
@@ -274,7 +265,7 @@
             if (!cloudUrl) return;
             try {
                 console.log("Sincronizando desde la nube...");
-                const res = await fetch(cloudUrl);
+                const res = await fetch(`${cloudUrl}?path=menu_data&_t=${Date.now()}`);
                 const data = await res.json();
                 console.log("Datos recibidos:", data);
                 if (data.products && data.products.length > 0) {
@@ -297,9 +288,13 @@
                         updateStatusUI(isOpen);
                     }
                 }
+                if (data.guarniciones && data.guarniciones.length > 0) {
+                    SIDES_LIST = data.guarniciones.map(g => g.nombre);
+                }
                 renderProducts();
                 renderBanners();
                 renderSchedules();
+                renderSidesAdmin();
             } catch (e) {
                 console.error("Error en syncFromCloud:", e);
             }
@@ -324,19 +319,19 @@
             if (!cloudUrl) return;
             toast("Guardando en la nube...");
             try {
-                // Usamos un formulario oculto o un fetch con mode: 'no-cors' para evitar bloqueos de Google
-                // pero lo ideal es intentar fetch normal primero.
-                await fetch(cloudUrl, {
+                const res = await fetch(cloudUrl, {
                     method: 'POST',
-                    mode: 'no-cors',
-                    body: JSON.stringify({
-                        action,
-                        payload,
-                        token: 'PURO_SABOR_SECURE_2024'
-                    })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action, payload })
                 });
-                // Apps Script no permite leer la respuesta con no-cors, así que asumimos éxito y resincronizamos en 2 seg
-                setTimeout(syncFromCloud, 2000);
+                const responseData = await res.json();
+                if (responseData.success) {
+                    toast("Guardado exitoso ✅");
+                    setTimeout(syncFromCloud, 500);
+                } else {
+                    console.error("Error del servidor:", responseData);
+                    toast("Error al guardar ❌");
+                }
             } catch (e) {
                 console.error("Error en cloudSave:", e);
                 toast("Error de conexión ❌");
