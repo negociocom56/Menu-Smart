@@ -265,7 +265,7 @@
             if (!cloudUrl) return;
             try {
                 console.log("Sincronizando desde la nube...");
-                const res = await fetch(`${cloudUrl}?path=menu_data&_t=${Date.now()}`);
+                const res = await fetch(`${cloudUrl}?path=menu_data_admin&_t=${Date.now()}`);
                 const data = await res.json();
                 console.log("Datos recibidos:", data);
                 if (data.products && data.products.length > 0) {
