@@ -283,7 +283,7 @@
                 if (data.config) {
                     const shopOpen = data.config.find(c => c.key === 'shop_open');
                     if (shopOpen) {
-                        const isOpen = shopOpen.value === true || String(shopOpen.value).toLowerCase() === 'true';
+                        const isOpen = shopOpen.value === true || String(shopOpen.value).toLowerCase() === 'true' || String(shopOpen.value) === '1';
                         document.getElementById('shop-open-toggle').checked = isOpen;
                         updateStatusUI(isOpen);
                     }
