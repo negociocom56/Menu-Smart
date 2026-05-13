@@ -436,7 +436,6 @@ function openCheckout() {
     }
 
     // === CIERRE AUTOMÁTICO (Hora Argentina) ===
-    /*
     const now = new Date();
     const argTimeStr = now.toLocaleString('en-US', { timeZone: 'America/Argentina/Buenos_Aires' });
     const argDate = new Date(argTimeStr); // Parse as local to extract hours/minutes
@@ -445,7 +444,6 @@ function openCheckout() {
         toast('El local se encuentra cerrado. (Abre a las 10:00)');
         return;
     }
-    */
 
     const ov = document.getElementById('checkout-overlay');
     ov.classList.add('open');
