@@ -796,7 +796,10 @@ async function submitOrder(e) {
                         c: cantCubiertos,
                         p: optEnvioPrio,
                         ze: isZonaExtendida,
-                        zp: isZonaPrincipal
+                        zp: isZonaPrincipal,
+                        da: DISCOUNT_APPLIED,
+                        dam: DISCOUNT_AMOUNT,
+                        dc: DISCOUNT_CODE
                     },
                     it: cart.map(item => ({
                         n: item.name, q: item.qty, p: item.price, c: item.category || '',

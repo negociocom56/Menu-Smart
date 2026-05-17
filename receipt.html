@@ -235,7 +235,10 @@
                         cubiertos: json.o?.c !== undefined ? json.o.c : (json.opts?.cubiertos || false),
                         prio: json.o?.p !== undefined ? json.o.p : (json.opts?.prio || false),
                         zonaExtendida: json.o?.ze !== undefined ? json.o.ze : (json.opts?.zonaExtendida || false),
-                        zonaPrincipal: json.o?.zp !== undefined ? json.o.zp : (json.opts?.zonaPrincipal || false)
+                        zonaPrincipal: json.o?.zp !== undefined ? json.o.zp : (json.opts?.zonaPrincipal || false),
+                        discountApplied: json.o?.da !== undefined ? json.o.da : false,
+                        discountAmount: json.o?.dam !== undefined ? json.o.dam : 0,
+                        discountCode: json.o?.dc !== undefined ? json.o.dc : ''
                     },
                     items: (json.it || []).map(item => ({
                         n: item.n,
@@ -311,6 +314,14 @@
                         <div class="item-row" style="border:none; padding:2px 0;">
                             <div class="item-info"><div class="item-name" style="font-size:0.8rem;">📍 ÁREA PRINCIPAL</div></div>
                             <div class="item-subtotal" style="font-size:0.8rem;">$0</div>
+                        </div>
+                    `;
+                }
+                if (data.opts.discountApplied) {
+                    itemsEl.innerHTML += `
+                        <div class="item-row" style="border:none; padding:2px 0;">
+                            <div class="item-info"><div class="item-name" style="font-size:0.8rem; color:#7e22ce;">🎟️ CUPÓN (${data.opts.discountCode})</div></div>
+                            <div class="item-subtotal" style="font-size:0.8rem; color:#7e22ce;">-$${data.opts.discountAmount.toLocaleString('es-AR')}</div>
                         </div>
                     `;
                 }
