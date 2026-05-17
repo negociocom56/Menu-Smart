@@ -29,6 +29,12 @@ let currentLat = -26.830419; // Default center (Tucuman)
 let currentLng = -65.203794;
 let GUARNICIONES = [];
 
+// Discount State
+let DISCOUNT_ACTIVE = false;
+let DISCOUNT_CODE = '';
+let DISCOUNT_AMOUNT = 0;
+let DISCOUNT_APPLIED = false;
+
 // ===================================================
 // CONFIGURACIÓN MAESTRA — API Unificada (MySQL/Hostinger)
 // ===================================================
@@ -72,6 +78,15 @@ async function syncFromCloud() {
                 const isOpen = shopOpen.value === true || String(shopOpen.value).toLowerCase() === 'true';
                 localStorage.setItem('bocado_shop_open', isOpen);
             }
+            const dActive = data.config.find(c => c.key === 'discount_active');
+            if (dActive) {
+                DISCOUNT_ACTIVE = dActive.value === true || String(dActive.value).toLowerCase() === 'true' || String(dActive.value) === '1';
+                document.getElementById('discount-group').style.display = DISCOUNT_ACTIVE ? 'block' : 'none';
+            }
+            const dCode = data.config.find(c => c.key === 'discount_code');
+            if (dCode) DISCOUNT_CODE = dCode.value.toUpperCase();
+            const dAmount = data.config.find(c => c.key === 'discount_amount');
+            if (dAmount) DISCOUNT_AMOUNT = parseFloat(dAmount.value) || 0;
         }
         if (data.guarniciones && data.guarniciones.length > 0) {
             GUARNICIONES = data.guarniciones.map(g => g.nombre);
@@ -436,6 +451,7 @@ function openCheckout() {
     }
 
     // === CIERRE AUTOMÁTICO (Hora Argentina) ===
+    /*
     const now = new Date();
     const argTimeStr = now.toLocaleString('en-US', { timeZone: 'America/Argentina/Buenos_Aires' });
     const argDate = new Date(argTimeStr); // Parse as local to extract hours/minutes
@@ -444,6 +460,7 @@ function openCheckout() {
         toast('El local se encuentra cerrado. (Abre a las 10:00)');
         return;
     }
+    */
 
     const ov = document.getElementById('checkout-overlay');
     ov.classList.add('open');
@@ -465,6 +482,15 @@ function openCheckout() {
     if (cantCubiertos > 0) total += 200 * cantCubiertos;
     if (document.getElementById('opt-envio-prio')?.checked) total += 2000;
     if (document.getElementById('cust-delivery')?.value === 'delivery' && document.getElementById('cust-zone')?.value === 'extendida') total += 700;
+    
+    // Reset discount message when opening checkout
+    if (DISCOUNT_ACTIVE) {
+        DISCOUNT_APPLIED = false;
+        document.getElementById('cust-discount').value = '';
+        const msgBox = document.getElementById('discount-msg');
+        if (msgBox) msgBox.style.display = 'none';
+    }
+    
     document.getElementById('checkout-total').innerText = total.toLocaleString('es-AR');
 
     document.getElementById('checkout-items').innerHTML = cart.map((item, index) => `
@@ -676,6 +702,10 @@ async function submitOrder(e) {
     if (cantCubiertos > 0) total += 200 * cantCubiertos;
     if (optEnvioPrio) total += 2000;
     if (isZonaExtendida) total += 700;
+    if (DISCOUNT_APPLIED) {
+        total -= DISCOUNT_AMOUNT;
+        if (total < 0) total = 0;
+    }
 
     const orderId = `${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${String(Date.now()).slice(-6)}`;
 
@@ -692,6 +722,7 @@ async function submitOrder(e) {
     if (optEnvioPrio) msg += `🚀 Envío Prioritario (+ $2000)\n`;
     if (isZonaExtendida) msg += `🛵 Zona Extendida (+ $700)\n`;
     else if (isZonaPrincipal) msg += `📍 Área Principal (Sin cargo extra)\n`;
+    if (DISCOUNT_APPLIED) msg += `🎟️ Descuento aplicado (${DISCOUNT_CODE}): -$${DISCOUNT_AMOUNT.toLocaleString('es-AR')}\n`;
 
     msg += `💰 *Total: $${total.toLocaleString('es-AR')}* $$$\n\n`;
     msg += `👤 Nombre: ${name}\n`;
@@ -742,7 +773,10 @@ async function submitOrder(e) {
                     extras: {
                         cubiertos: cantCubiertos,
                         envioPrio: optEnvioPrio,
-                        zonaExtendida: isZonaExtendida
+                        zonaExtendida: isZonaExtendida,
+                        discountApplied: DISCOUNT_APPLIED,
+                        discountAmount: DISCOUNT_AMOUNT,
+                        discountCode: DISCOUNT_CODE
                     }
                 };
                 const res = await fetch(CLOUD_URL, {
@@ -865,12 +899,36 @@ function setupEvents() {
             if (cantCubiertos > 0) total += 200 * cantCubiertos;
             if (document.getElementById('opt-envio-prio')?.checked) total += 2000;
             if (document.getElementById('cust-delivery')?.value === 'delivery' && document.getElementById('cust-zone')?.value === 'extendida') total += 700;
+            
+            if (DISCOUNT_APPLIED) {
+                total -= DISCOUNT_AMOUNT;
+                if (total < 0) total = 0;
+            }
+            
             totalElem.innerText = total.toLocaleString('es-AR');
         }
     };
     document.getElementById('opt-cubiertos')?.addEventListener('input', updateCheckoutTotal);
     document.getElementById('opt-envio-prio')?.addEventListener('change', updateCheckoutTotal);
     document.getElementById('cust-zone')?.addEventListener('change', updateCheckoutTotal);
+
+    document.getElementById('btn-apply-discount')?.addEventListener('click', () => {
+        const input = document.getElementById('cust-discount').value.toUpperCase().trim();
+        const msgBox = document.getElementById('discount-msg');
+        if (!msgBox) return;
+        msgBox.style.display = 'block';
+        
+        if (input === DISCOUNT_CODE && input !== '') {
+            DISCOUNT_APPLIED = true;
+            msgBox.innerHTML = `✅ ¡Código aplicado! -$${DISCOUNT_AMOUNT.toLocaleString('es-AR')}`;
+            msgBox.style.color = 'green';
+        } else {
+            DISCOUNT_APPLIED = false;
+            msgBox.innerHTML = `❌ Código inválido o expirado.`;
+            msgBox.style.color = 'red';
+        }
+        updateCheckoutTotal();
+    });
 
     document.getElementById('open-checkout')?.addEventListener('click', openCheckout);
     document.getElementById('cart-header-btn')?.addEventListener('click', () => {
