@@ -451,6 +451,7 @@ function openCheckout() {
     }
 
     // === CIERRE AUTOMÁTICO (Hora Argentina) ===
+    /*
     const now = new Date();
     const argTimeStr = now.toLocaleString('en-US', { timeZone: 'America/Argentina/Buenos_Aires' });
     const argDate = new Date(argTimeStr); // Parse as local to extract hours/minutes
@@ -459,6 +460,7 @@ function openCheckout() {
         toast('El local se encuentra cerrado. (Abre a las 10:00)');
         return;
     }
+    */
 
     const ov = document.getElementById('checkout-overlay');
     ov.classList.add('open');
@@ -743,116 +745,60 @@ async function submitOrder(e) {
     try {
         const deductPayload = cart.map(item => ({ id: item.id, qty: item.qty }));
 
-        // --- EJECUCIÓN EN PARALELO (MÁXIMA VELOCIDAD) ---
-        // 1. Descontamos stock
-        // 2. Creamos el pedido en MySQL (aparece en la Comanda)
-        // 3. Generamos el link corto del recibo
-        const [stockRes, orderRes, shortRes] = await Promise.allSettled([
-            cloudSave('deductStock', deductPayload),
-            // === NUEVO: Crear pedido en la base de datos unificada ===
-            (async () => {
-                const orderData = {
-                    action: 'crear_pedido_menu',
-                    items: cart.map(item => ({
-                        id: item.id,
-                        name: item.name,
-                        price: item.price,
-                        qty: item.qty,
-                        note: item.note || '',
-                        selectedSides: item.selectedSides || []
-                    })),
-                    nombre: name,
-                    celular: phone,
-                    tipoEntrega: delivery === 'delivery' ? 'envio' : 'retira',
-                    domicilio: delivery === 'delivery' ? address : '',
-                    metodoPago: paymentRaw,
-                    horario: timeRaw,
-                    observaciones: '',
-                    extras: {
-                        cubiertos: cantCubiertos,
-                        envioPrio: optEnvioPrio,
-                        zonaExtendida: isZonaExtendida,
-                        discountApplied: DISCOUNT_APPLIED,
-                        discountAmount: DISCOUNT_AMOUNT,
-                        discountCode: DISCOUNT_CODE
-                    }
-                };
-                const res = await fetch(CLOUD_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(orderData)
-                });
-                return await res.json();
-            })(),
-            // === Recibo digital ===
-            (async () => {
-                const receiptData = {
-                    i: orderId, n: name, p: phone, t: total, m: payment, d: delivery,
-                    a: delivery === 'delivery' ? address : 'Paso a Retirar',
-                    h: timeRaw,
-                    o: {
-                        c: cantCubiertos,
-                        p: optEnvioPrio,
-                        ze: isZonaExtendida,
-                        zp: isZonaPrincipal,
-                        da: DISCOUNT_APPLIED,
-                        dam: DISCOUNT_AMOUNT,
-                        dc: DISCOUNT_CODE
-                    },
-                    it: cart.map(item => ({
-                        n: item.name, q: item.qty, p: item.price, c: item.category || '',
-                        o: item.selectedSides && item.selectedSides.length > 0
-                            ? `[${item.selectedSides.join(', ')}] ${item.note || ''}`
-                            : (item.note || '')
-                    }))
-                };
-
-                let base64Data = btoa(unescape(encodeURIComponent(JSON.stringify(receiptData))));
-                base64Data = base64Data.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-
-                const fullReceiptUrl = `${window.location.origin}${window.location.pathname.replace('index.html', '')}receipt.html?data=${base64Data}`;
-
-                // --- MULTI-SHORTENER ROBUSTO ---
-                const shorteners = [
-                    `https://is.gd/create.php?format=simple&url=${encodeURIComponent(fullReceiptUrl)}`,
-                    `https://tinyurl.com/api-create.php?url=${encodeURIComponent(fullReceiptUrl)}`
-                ];
-
-                for (const sUrl of shorteners) {
-                    const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 3000);
-                    try {
-                        const res = await fetch(sUrl, { signal: controller.signal });
-                        clearTimeout(timeoutId);
-                        if (res.ok) {
-                            const short = await res.text();
-                            if (short && short.startsWith('http')) return short;
-                        }
-                    } catch (e) {
-                        clearTimeout(timeoutId);
-                    }
+        // --- PASO 1: Crear pedido en MySQL (necesitamos el ID para el recibo) ---
+        let comandaId = null;
+        try {
+            const orderData = {
+                action: 'crear_pedido_menu',
+                items: cart.map(item => ({
+                    id: item.id,
+                    name: item.name,
+                    price: item.price,
+                    qty: item.qty,
+                    note: item.note || '',
+                    selectedSides: item.selectedSides || []
+                })),
+                nombre: name,
+                celular: phone,
+                tipoEntrega: delivery === 'delivery' ? 'envio' : 'retira',
+                domicilio: delivery === 'delivery' ? address : '',
+                metodoPago: paymentRaw,
+                horario: timeRaw,
+                observaciones: '',
+                extras: {
+                    cubiertos: cantCubiertos,
+                    envioPrio: optEnvioPrio,
+                    zonaExtendida: isZonaExtendida,
+                    discountApplied: DISCOUNT_APPLIED,
+                    discountAmount: DISCOUNT_AMOUNT,
+                    discountCode: DISCOUNT_CODE
                 }
-                return fullReceiptUrl;
-            })()
-        ]);
-
-        // Log del resultado del pedido en MySQL
-        if (orderRes.status === 'fulfilled' && orderRes.value?.success) {
-            console.log('✅ Pedido registrado en Comanda:', orderRes.value.id);
-        } else {
-            console.warn('⚠️ No se pudo registrar en Comanda (el pedido sigue por WhatsApp):', orderRes.reason || orderRes.value?.error);
+            };
+            const res = await fetch(CLOUD_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(orderData)
+            });
+            const orderResult = await res.json();
+            if (orderResult?.success && orderResult?.id) {
+                comandaId = orderResult.id;
+                console.log('✅ Pedido registrado en Comanda:', comandaId);
+            }
+        } catch (e) {
+            console.warn('⚠️ No se pudo registrar en Comanda (el pedido sigue por WhatsApp):', e);
         }
 
-        if (shortRes.status === 'fulfilled' && shortRes.value) {
-            msg += `\n🧾 *Tu Recibo Digital:* ${shortRes.value}\n`;
+        // --- PASO 2: Generar enlace del recibo (corto y robusto) ---
+        if (comandaId) {
+            const receiptUrl = `${window.location.origin}${window.location.pathname.replace('index.html', '')}receipt.html?id=${comandaId}`;
+            msg += `\n🧾 *Tu Recibo Digital:* ${receiptUrl}\n`;
+            msg += `\n📋 *ID Comanda:* ${comandaId}\n`;
         }
 
-        // Agregar ID del pedido en comanda al mensaje si se creó
-        if (orderRes.status === 'fulfilled' && orderRes.value?.id) {
-            msg += `\n📋 *ID Comanda:* ${orderRes.value.id}\n`;
-        }
+        // --- PASO 3: Descontar stock (en paralelo, no bloquea) ---
+        cloudSave('deductStock', deductPayload).catch(e => console.warn('Stock deduct error:', e));
 
-        // Recalcular waUrl con el link del recibo si se generó
+        // Recalcular waUrl con el link del recibo
         const waUrl = `https://wa.me/${shopNum}?text=${encodeURIComponent(msg)}`;
 
         // Descontar localmente
