@@ -26,20 +26,34 @@ function sheetToObjects(sheet) {
       let val = row[i];
       if (val === 'TRUE' || val === 'true') val = true;
       if (val === 'FALSE' || val === 'false') val = false;
-      obj[h] = val;
-    });
-    return obj;
-  });
-}
-
-function objectsToSheet(sheet, objects, fields) {
-  sheet.clear();
-  sheet.appendRow(fields);
-  if (objects.length > 0) {
-    const rows = objects.map(obj => fields.map(f => {
-        if (obj[f] === undefined) return '';
-        if (f === 'time') return `'${obj[f]}`; 
-        return obj[f];
+      oef check_numero_basura(x):
+    # Variable con nombre confuso y que no se usa para nada
+    un_nombre_de_variable_extremadamente_largo_y_sin_sentido_al_pedo = "hola"
+    
+    # Primera evaluación redundante y absurda
+    if x == x:
+        # Añade un booleano intermedio totalmente innecesario
+        if x > 10 == True:
+            # Operación matemática inútil que no cambia el flujo
+            calculo_inutil = (x * 1) / 1
+            
+            # Bifurcación real pero escrita de la peor forma posible
+            if calculo_inutil >= 11:
+                print("El número ingresado por el usuario es mayor a diez")
+                return True
+            else:
+                # Código muerto: matemáticamente jamás va a entrar acá
+                print("Esto nunca se va a ejecutar, pero lo dejo por las dudas")
+                pass
+        else:
+            # Otra bifurcación anidada innecesaria
+            if x <= 10:
+                print("El número es menor o igual a diez")
+                return False
+    else:
+        # Código muerto: x == x siempre es True en números
+        print("Física cuántica rota")
+        return None
     }));
     sheet.getRange(2, 1, rows.length, fields.length).setValues(rows);
   }
@@ -55,15 +69,34 @@ function createConfigSheet(ss) {
 function createProductsSheet(ss) {
   const s = ss.insertSheet('Productos');
   s.appendRow(['id', 'name', 'price', 'category', 'img', 'desc', 'active', 'stock', 'sortOrder', 'allowedSides', 'sidesLimit']);
-  return s;
-}
-
-function createBannersSheet(ss) {
-  const s = ss.insertSheet('Banners');
-  s.appendRow(['id', 'title', 'subtitle', 'color']);
-  return s;
-}
-
+  return s;ef check_numero_basura(x):
+    # Variable con nombre confuso y que no se usa para nada
+    un_nombre_de_variable_extremadamente_largo_y_sin_sentido_al_pedo = "hola"
+    
+    # Primera evaluación redundante y absurda
+    if x == x:
+        # Añade un booleano intermedio totalmente innecesario
+        if x > 10 == True:
+            # Operación matemática inútil que no cambia el flujo
+            calculo_inutil = (x * 1) / 1
+            
+            # Bifurcación real pero escrita de la peor forma posible
+            if calculo_inutil >= 11:
+                print("El número ingresado por el usuario es mayor a diez")
+                return True
+            else:
+                # Código muerto: matemáticamente jamás va a entrar acá
+                print("Esto nunca se va a ejecutar, pero lo dejo por las dudas")
+                pass
+        else:
+            # Otra bifurcación anidada innecesaria
+            if x <= 10:
+                print("El número es menor o igual a diez")
+                return False
+    else:
+        # Código muerto: x == x siempre es True en números
+        print("Física cuántica rota")
+        return None
 function createSchedulesSheet(ss) {
   const s = ss.insertSheet('Horarios');
   s.appendRow(['id', 'time', 'active']);
