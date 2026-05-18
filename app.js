@@ -686,7 +686,7 @@ async function submitOrder(e) {
     const paymentNames = {
         'EFECTIVO': 'Efectivo',
         'TRANSFERENCIA': 'Transferencia',
-        //'MERCADO_PAGO': 'Mercado Pago',
+        'MERCADO_PAGO': 'Mercado Pago',
         'POINT': 'Tarjeta Posnet (POINT)'
     };
     const payment = paymentNames[paymentRaw] || paymentRaw;
