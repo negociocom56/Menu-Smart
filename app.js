@@ -451,7 +451,6 @@ function openCheckout() {
     }
 
     // === CIERRE AUTOMÁTICO (Hora Argentina) ===
-    /*
     const now = new Date();
     const argTimeStr = now.toLocaleString('en-US', { timeZone: 'America/Argentina/Buenos_Aires' });
     const argDate = new Date(argTimeStr); // Parse as local to extract hours/minutes
@@ -460,7 +459,6 @@ function openCheckout() {
         toast('El local se encuentra cerrado. (Abre a las 10:00)');
         return;
     }
-    */
 
     const ov = document.getElementById('checkout-overlay');
     ov.classList.add('open');
@@ -482,7 +480,7 @@ function openCheckout() {
     if (cantCubiertos > 0) total += 200 * cantCubiertos;
     if (document.getElementById('opt-envio-prio')?.checked) total += 2000;
     if (document.getElementById('cust-delivery')?.value === 'delivery' && document.getElementById('cust-zone')?.value === 'extendida') total += 700;
-    
+
     // Reset discount message when opening checkout
     if (DISCOUNT_ACTIVE) {
         DISCOUNT_APPLIED = false;
@@ -490,7 +488,7 @@ function openCheckout() {
         const msgBox = document.getElementById('discount-msg');
         if (msgBox) msgBox.style.display = 'none';
     }
-    
+
     document.getElementById('checkout-total').innerText = total.toLocaleString('es-AR');
 
     document.getElementById('checkout-items').innerHTML = cart.map((item, index) => `
@@ -902,12 +900,12 @@ function setupEvents() {
             if (cantCubiertos > 0) total += 200 * cantCubiertos;
             if (document.getElementById('opt-envio-prio')?.checked) total += 2000;
             if (document.getElementById('cust-delivery')?.value === 'delivery' && document.getElementById('cust-zone')?.value === 'extendida') total += 700;
-            
+
             if (DISCOUNT_APPLIED) {
                 total -= DISCOUNT_AMOUNT;
                 if (total < 0) total = 0;
             }
-            
+
             totalElem.innerText = total.toLocaleString('es-AR');
         }
     };
@@ -920,7 +918,7 @@ function setupEvents() {
         const msgBox = document.getElementById('discount-msg');
         if (!msgBox) return;
         msgBox.style.display = 'block';
-        
+
         if (input === DISCOUNT_CODE && input !== '') {
             DISCOUNT_APPLIED = true;
             msgBox.innerHTML = `✅ ¡Código aplicado! -$${DISCOUNT_AMOUNT.toLocaleString('es-AR')}`;
