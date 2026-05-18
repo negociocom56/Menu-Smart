@@ -284,7 +284,7 @@
                     n: item.producto || item.name || '',
                     q: item.cantidad || item.qty || 1,
                     p: parseFloat(item.precio || item.price || 0),
-                    c: '',
+                    c: item.categoria || item.category || '',
                     note: item.nota || item.note || '',
                     guarnicion: item.guarnicion || []
                 }))

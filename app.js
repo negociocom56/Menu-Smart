@@ -756,6 +756,7 @@ async function submitOrder(e) {
                     price: item.price,
                     qty: item.qty,
                     note: item.note || '',
+                    category: item.category || '',
                     selectedSides: item.selectedSides || []
                 })),
                 nombre: name,
