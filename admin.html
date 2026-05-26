@@ -16,7 +16,7 @@
     <header class="app-header">
         <div class="container" style="display:flex;justify-content:space-between;align-items:center;">
             <div class="brand">
-                <img src="img/logo.jpg" alt="Logo" class="brand-logo">
+                <img src="img/logo.webp" alt="Logo" class="brand-logo">
                 <div class="brand-text">
                     <h1>Panel Admin</h1>
                     <span>Gestión de Puro Sabor Menú</span>
@@ -54,30 +54,42 @@
         <section class="admin-form-card" style="border-left: 5px solid #8b5cf6; padding: 20px; margin-top: 20px;">
             <div style="display: flex; align-items: center; justify-content: space-between;">
                 <div>
-                    <h3 style="margin-bottom: 4px; color: #8b5cf6;"><i class="fas fa-ticket-alt"></i> CÓDIGO DE DESCUENTO</h3>
-                    <p style="font-size: 0.85rem; color: var(--text-secondary);">Habilita un código promocional en el checkout.</p>
+                    <h3 style="margin-bottom: 4px; color: #8b5cf6;"><i class="fas fa-ticket-alt"></i> CÓDIGO DE
+                        DESCUENTO</h3>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary);">Habilita un código promocional en el
+                        checkout.</p>
                 </div>
                 <label class="switch">
                     <input type="checkbox" id="discount-toggle" onchange="toggleDiscountStatus(this.checked)">
                     <span class="slider round"></span>
                 </label>
             </div>
-            
-            <div id="discount-settings" style="display: none; padding-top: 15px; margin-top: 15px; border-top: 1px dashed var(--border);">
+
+            <div id="discount-settings"
+                style="display: none; padding-top: 15px; margin-top: 15px; border-top: 1px dashed var(--border);">
                 <div style="display: flex; gap: 15px; align-items: flex-end;">
                     <div style="flex: 1;">
-                        <label style="font-size: 0.75rem; font-weight: bold; color: var(--text-muted); display: block; margin-bottom: 4px;">CÓDIGO GENERADO</label>
+                        <label
+                            style="font-size: 0.75rem; font-weight: bold; color: var(--text-muted); display: block; margin-bottom: 4px;">CÓDIGO
+                            GENERADO</label>
                         <div style="display: flex; gap: 8px;">
-                            <input type="text" id="discount-code" readonly style="flex: 1; background: var(--bg-hover); padding: 8px 12px; border-radius: 6px; font-family: monospace; font-size: 1.2rem; font-weight: bold; letter-spacing: 2px; color: var(--text-primary); text-align: center; border: 1px solid var(--border);">
-                            <button onclick="generateNewDiscountCode()" title="Generar nuevo código" style="background: var(--bg-muted); border: 1px solid var(--border); border-radius: 6px; padding: 0 12px; cursor: pointer; color: var(--text-secondary);"><i class="fas fa-sync-alt"></i></button>
+                            <input type="text" id="discount-code" readonly
+                                style="flex: 1; background: var(--bg-hover); padding: 8px 12px; border-radius: 6px; font-family: monospace; font-size: 1.2rem; font-weight: bold; letter-spacing: 2px; color: var(--text-primary); text-align: center; border: 1px solid var(--border);">
+                            <button onclick="generateNewDiscountCode()" title="Generar nuevo código"
+                                style="background: var(--bg-muted); border: 1px solid var(--border); border-radius: 6px; padding: 0 12px; cursor: pointer; color: var(--text-secondary);"><i
+                                    class="fas fa-sync-alt"></i></button>
                         </div>
                     </div>
                     <div style="flex: 1;">
-                        <label style="font-size: 0.75rem; font-weight: bold; color: var(--text-muted); display: block; margin-bottom: 4px;">MONTO DE DESCUENTO ($)</label>
-                        <input type="number" id="discount-amount" value="500" min="0" step="100" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border); font-size: 1rem; text-align: center;">
+                        <label
+                            style="font-size: 0.75rem; font-weight: bold; color: var(--text-muted); display: block; margin-bottom: 4px;">MONTO
+                            DE DESCUENTO ($)</label>
+                        <input type="number" id="discount-amount" value="500" min="0" step="100"
+                            style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border); font-size: 1rem; text-align: center;">
                     </div>
                 </div>
-                <button onclick="saveDiscountSettings()" class="btn-save" style="margin-top: 15px; background: #8b5cf6;">Guardar Descuento</button>
+                <button onclick="saveDiscountSettings()" class="btn-save"
+                    style="margin-top: 15px; background: #8b5cf6;">Guardar Descuento</button>
             </div>
         </section>
 
@@ -318,7 +330,7 @@
                         document.getElementById('shop-open-toggle').checked = isOpen;
                         updateStatusUI(isOpen);
                     }
-                    
+
                     const discountActive = data.config.find(c => c.key === 'discount_active');
                     if (discountActive) {
                         const isDiscountOpen = discountActive.value === true || String(discountActive.value).toLowerCase() === 'true' || String(discountActive.value) === '1';
@@ -331,7 +343,7 @@
                     } else if (document.getElementById('discount-toggle').checked) {
                         generateNewDiscountCode();
                     }
-                    
+
                     const discountAmount = data.config.find(c => c.key === 'discount_amount');
                     if (discountAmount && discountAmount.value) {
                         document.getElementById('discount-amount').value = discountAmount.value;
@@ -375,11 +387,11 @@
 
         async function toggleDiscountStatus(isActive) {
             document.getElementById('discount-settings').style.display = isActive ? 'block' : 'none';
-            
+
             if (isActive && !document.getElementById('discount-code').value) {
                 generateNewDiscountCode();
             }
-            
+
             const config = [
                 { key: 'discount_active', value: isActive },
                 { key: 'discount_code', value: document.getElementById('discount-code').value || '' },
@@ -393,7 +405,7 @@
             const code = document.getElementById('discount-code').value;
             const amount = document.getElementById('discount-amount').value;
             if (!code) return toast('Debe haber un código');
-            
+
             const config = [
                 { key: 'discount_active', value: document.getElementById('discount-toggle').checked },
                 { key: 'discount_code', value: code },
