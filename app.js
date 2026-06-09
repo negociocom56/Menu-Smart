@@ -466,13 +466,20 @@ function openCheckout() {
     // --- NUEVA VALIDACIÓN PREVENTIVA: GUARNICIONES ---
     let missingSides = false;
     cart.forEach(item => {
-        if (item.allowedSides && item.allowedSides.length > 0 && (!item.selectedSides || item.selectedSides.length === 0)) {
-            missingSides = true;
+        const allowedStr = item.allowedSides || '';
+        const allowedArray = allowedStr.split(',').map(x => x.trim()).filter(x => x !== '');
+        if (allowedArray.length > 0) {
+            const limit = parseInt(item.sidesLimit) || 1;
+            const required = item.qty * limit;
+            const selected = (item.selectedSides || []).length;
+            if (selected < required) {
+                missingSides = true;
+            }
         }
     });
 
     if (missingSides) {
-        toast('🥗 ¡Opa! Te falta elegir la guarnición en alguno de tus platos.');
+        toast('🥗 ¡Opa! Te falta elegir guarniciones en alguno de tus platos.');
         return; // Detenemos la apertura del checkout
     }
 
@@ -614,14 +621,20 @@ function validateForm() {
     // --- NUEVA VALIDACIÓN: GUARNICIONES EN EL CARRITO ---
     let missingSides = false;
     cart.forEach(item => {
-        // Si el producto tiene guarniciones permitidas pero no eligió ninguna
-        if (item.allowedSides && item.allowedSides.length > 0 && (!item.selectedSides || item.selectedSides.length === 0)) {
-            missingSides = true;
+        const allowedStr = item.allowedSides || '';
+        const allowedArray = allowedStr.split(',').map(x => x.trim()).filter(x => x !== '');
+        if (allowedArray.length > 0) {
+            const limit = parseInt(item.sidesLimit) || 1;
+            const required = item.qty * limit;
+            const selected = (item.selectedSides || []).length;
+            if (selected < required) {
+                missingSides = true;
+            }
         }
     });
 
     if (missingSides) {
-        toast('🥗 Por favor, seleccioná la guarnición para tus platos.');
+        toast('🥗 Por favor, seleccioná todas las guarniciones correspondientes.');
         ok = false;
     }
 
