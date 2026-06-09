@@ -583,7 +583,7 @@
             // Reset y marcar sides
             document.querySelectorAll('.side-opt').forEach(el => el.checked = false);
             if (p.allowedSides) {
-                const allowed = p.allowedSides.split(',');
+                const allowed = p.allowedSides.split(',').map(s => s.trim());
                 document.querySelectorAll('.side-opt').forEach(el => {
                     if (allowed.includes(el.value)) el.checked = true;
                 });

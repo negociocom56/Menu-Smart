@@ -297,9 +297,11 @@ function renderProducts() {
             }
 
             const allowedStr = p.allowedSides || '';
-            const allowedArray = allowedStr.split(',').filter(x => x.trim() !== '');
+            const allowedArray = allowedStr.split(',').map(x => x.trim()).filter(x => x !== '');
             const limit = parseInt(p.sidesLimit) || 1;
+            const totalLimit = inCart ? (inCart.qty * limit) : limit;
             const selectedSides = inCart ? (inCart.selectedSides || []) : [];
+            const selectedCount = selectedSides.length;
 
             html += `
             <div class="product-card" id="card-${p.id}" style="${!isAvailable ? 'opacity:0.6;' : ''}">
@@ -315,16 +317,23 @@ function renderProducts() {
                     ${inCart && isAvailable ? `
                         ${allowedArray.length > 0 ? `
                             <div style="margin-top:10px; background:var(--bg-muted); padding:10px; border-radius:8px;">
-                                <label style="font-size:0.75rem; font-weight:bold; color:var(--primary); display:block; margin-bottom:6px;">🥗 ELEGÍ TU GUARNICIÓN (Máx. ${limit}):</label>
+                                <label style="font-size:0.75rem; font-weight:bold; color:${selectedCount === totalLimit ? 'var(--primary)' : '#e67e22'}; display:block; margin-bottom:6px;">
+                                    🥗 ELEGÍ TU GUARNICIÓN (${selectedCount} de ${totalLimit}):
+                                </label>
                                 <div style="display:grid; grid-template-columns:1fr; gap:6px;">
-                                    ${allowedArray.map(g => `
-                                        <label style="display:flex; align-items:center; gap:8px; font-size:0.8rem; cursor:pointer;">
-                                            <input type="checkbox" onchange="toggleSide('${p.id}', '${g}')" 
-                                                ${selectedSides.includes(g) ? 'checked' : ''}
-                                                style="width:16px; height:16px; accent-color:var(--primary);">
-                                            ${g}
-                                        </label>
-                                    `).join('')}
+                                    ${allowedArray.map(g => {
+                                        const count = selectedSides.filter(s => s === g).length;
+                                        return `
+                                            <div style="display:flex; align-items:center; justify-content:space-between; font-size:0.8rem; padding: 4px 0; border-bottom: 1px dashed rgba(0,0,0,0.05);">
+                                                <span style="font-weight: 500; color: var(--text);">${g}</span>
+                                                <div style="display:flex; align-items:center; gap:8px; background: white; padding: 2px 6px; border-radius: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                                                    <button type="button" onclick="adjustSideQty('${p.id}', '${g}', -1)" style="width:20px; height:20px; border-radius:50%; border:1px solid var(--primary); background:none; color:var(--primary); display:flex; align-items:center; justify-content:center; font-size: 0.8rem; font-weight:bold; cursor:pointer; padding:0; line-height:1;">-</button>
+                                                    <span style="font-weight:bold; min-width:14px; text-align:center; font-size: 0.8rem; color: var(--text);">${count}</span>
+                                                    <button type="button" onclick="adjustSideQty('${p.id}', '${g}', 1)" style="width:20px; height:20px; border-radius:50%; border:1px solid var(--primary); background:none; color:var(--primary); display:flex; align-items:center; justify-content:center; font-size: 0.8rem; font-weight:bold; cursor:pointer; padding:0; line-height:1;">+</button>
+                                                </div>
+                                            </div>
+                                        `;
+                                    }).join('')}
                                 </div>
                             </div>
                         ` : ''}
@@ -370,6 +379,14 @@ function changeQty(id, delta) {
     if (item.qty <= 0) {
         cart = cart.filter(c => String(c.id) !== String(id));
         toast('Producto removido');
+    } else {
+        // Recortar guarniciones si la cantidad disminuyó
+        const p = products.find(x => String(x.id) === String(id));
+        const limitPerUnit = parseInt(p?.sidesLimit) || 1;
+        const totalLimit = item.qty * limitPerUnit;
+        if (item.selectedSides && item.selectedSides.length > totalLimit) {
+            item.selectedSides.splice(totalLimit);
+        }
     }
     refresh();
 }
@@ -381,27 +398,43 @@ function updateNote(id, val) {
 }
 
 function updateSide(id, val) {
-    // Deprecated for toggleSide
+    // Deprecated for adjustSideQty
 }
 
-function toggleSide(id, side) {
+function formatSidesArray(selectedSides) {
+    if (!selectedSides || selectedSides.length === 0) return [];
+    const counts = {};
+    selectedSides.forEach(s => {
+        counts[s] = (counts[s] || 0) + 1;
+    });
+    return Object.entries(counts).map(([name, qty]) => `${qty}x ${name}`);
+}
+
+function formatSides(selectedSides) {
+    return formatSidesArray(selectedSides).join(', ');
+}
+
+function adjustSideQty(id, side, delta) {
     const item = cart.find(c => String(c.id) === String(id));
     if (!item) return;
 
     const p = products.find(x => String(x.id) === String(id));
-    const limit = parseInt(p?.sidesLimit) || 1;
+    const limitPerUnit = parseInt(p?.sidesLimit) || 1;
+    const totalLimit = item.qty * limitPerUnit;
 
     if (!item.selectedSides) item.selectedSides = [];
 
-    if (item.selectedSides.includes(side)) {
-        item.selectedSides = item.selectedSides.filter(s => s !== side);
-    } else {
-        if (item.selectedSides.length < limit) {
+    if (delta > 0) {
+        if (item.selectedSides.length < totalLimit) {
             item.selectedSides.push(side);
         } else {
-            toast(`Máximo ${limit} guarniciones`);
-            renderProducts();
+            toast(`Máximo ${totalLimit} guarniciones para ${item.qty} menú(s)`);
             return;
+        }
+    } else if (delta < 0) {
+        const idx = item.selectedSides.indexOf(side);
+        if (idx !== -1) {
+            item.selectedSides.splice(idx, 1);
         }
     }
     localStorage.setItem('bocado_cart', JSON.stringify(cart));
@@ -451,6 +484,7 @@ function openCheckout() {
     }
 
     // === CIERRE AUTOMÁTICO (Hora Argentina) ===
+    /*
     const now = new Date();
     const argTimeStr = now.toLocaleString('en-US', { timeZone: 'America/Argentina/Buenos_Aires' });
     const argDate = new Date(argTimeStr); // Parse as local to extract hours/minutes
@@ -459,6 +493,7 @@ function openCheckout() {
         toast('El local se encuentra cerrado. (Abre a las 10:00)');
         return;
     }
+    */
 
     const ov = document.getElementById('checkout-overlay');
     ov.classList.add('open');
@@ -496,7 +531,7 @@ function openCheckout() {
             <img src="${item.img}" alt="" onerror="this.src='https://placehold.co/50x50/f3eeea/a89e96?text=?'">
             <div class="item-info">
                 <h4>${item.name} × ${item.qty}</h4>
-                ${item.selectedSides && item.selectedSides.length > 0 ? `<div class="item-note">🥗 Guarnición: ${item.selectedSides.join(', ')}</div>` : ''}
+                ${item.selectedSides && item.selectedSides.length > 0 ? `<div class="item-note">🥗 Guarnición: ${formatSides(item.selectedSides)}</div>` : ''}
                 ${item.note ? `<div class="item-note">📝 Nota: ${item.note}</div>` : ''}
                 <span>$${item.price.toLocaleString('es-AR')} c/u</span>
             </div>
@@ -711,7 +746,7 @@ async function submitOrder(e) {
     let msg = `=== *Pedido Puro Sabor* ===\n\n`;
     cart.forEach(item => {
         msg += `${item.name.toUpperCase()} x${item.qty} - $${(item.price * item.qty).toLocaleString('es-AR')}`;
-        if (item.selectedSides && item.selectedSides.length > 0) msg += `\n   🥗 Guarnición: ${item.selectedSides.join(', ')}`;
+        if (item.selectedSides && item.selectedSides.length > 0) msg += `\n   🥗 Guarnición: ${formatSides(item.selectedSides)}`;
         if (item.note) msg += `\n   📝 Nota: ${item.note}`;
         msg += `\n`;
     });
@@ -755,7 +790,7 @@ async function submitOrder(e) {
                     qty: item.qty,
                     note: item.note || '',
                     category: item.category || '',
-                    selectedSides: item.selectedSides || []
+                    selectedSides: formatSidesArray(item.selectedSides)
                 })),
                 nombre: name,
                 celular: phone,
