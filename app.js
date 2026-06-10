@@ -495,8 +495,11 @@ function openCheckout() {
     const argTimeStr = now.toLocaleString('en-US', { timeZone: 'America/Argentina/Buenos_Aires' });
     const argDate = new Date(argTimeStr); // Parse as local to extract hours/minutes
 
-    if (argDate.getHours() < 10 || argDate.getHours() > 15 || (argDate.getHours() === 15 && argDate.getMinutes() >= 30)) {
-        toast('El local se encuentra cerrado. (Abre a las 10:00)');
+    const hour = argDate.getHours();
+    const isOpen = (hour >= 10 && hour < 16) || (hour >= 20 || hour < 2);
+
+    if (!isOpen) {
+        toast('El local se encuentra cerrado. (Horarios: 10:00 a 16:00 y 20:00 a 02:00)');
         return;
     }
 
