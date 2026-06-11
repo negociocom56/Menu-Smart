@@ -513,8 +513,10 @@ function openCheckout() {
         if (activeSchedules.length > 0) {
             timeSelect.innerHTML = '<option value="">Seleccioná un horario...</option>' +
                 activeSchedules.map(s => `<option value="${s.time}">${s.time}</option>`).join('');
+            timeSelect.disabled = false;
         } else {
-            timeSelect.innerHTML = '<option value="">Sin horarios disponibles hoy</option>';
+            timeSelect.innerHTML = '<option value="Entrega Inmediata" selected>Entrega Inmediata</option>';
+            timeSelect.disabled = true;
         }
     }
 
