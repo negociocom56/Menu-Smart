@@ -513,6 +513,8 @@ function adjustSideQty(id, side, delta) {
             item.selectedSides.splice(idx, 1);
         }
     }
+    localStorage.setItem('bocado_cart', JSON.stringify(cart));
+    renderProducts();
 }
 
 function toggleDressing(productId, dressingName, isChecked) {
