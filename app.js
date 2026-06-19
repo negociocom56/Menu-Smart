@@ -301,13 +301,16 @@ function renderProducts() {
             const limit = parseInt(p.sidesLimit) || 1;
             const totalLimit = inCart ? (inCart.qty * limit) : limit;
             const selectedSides = inCart ? (inCart.selectedSides || []) : [];
-            const selectedCount = selectedSides.length;
 
-            const isSandwich = p.category.toLowerCase().includes('sandwich') || 
-                               p.category.toLowerCase().includes('sándwich') || 
-                               p.name.toLowerCase().includes('sandwich') || 
-                               p.name.toLowerCase().includes('sándwich');
-            const sideLabel = isSandwich ? '🍔 ELEGÍ ADEREZOS / ADICIONALES' : '🥗 ELEGÍ TU GUARNICIÓN';
+            const DRESSINGS_LIST = ['Mostaza', 'Mayonesa', 'Lechuga', 'Tomate', 'Ají'];
+            const isDressing = name => DRESSINGS_LIST.some(d => d.toLowerCase() === name.toLowerCase());
+
+            const allowedDressings = allowedArray.filter(isDressing);
+            const allowedGarnishes = allowedArray.filter(x => !isDressing(x));
+
+            const hasGarnishes = allowedGarnishes.length > 0;
+            const selectedGarnishCount = selectedSides.filter(x => !isDressing(x)).length;
+            const garnishRequired = hasGarnishes ? (inCart ? inCart.qty * limit : limit) : 0;
 
             html += `
             <div class="product-card" id="card-${p.id}" style="${!isAvailable ? 'opacity:0.6;' : ''}">
@@ -323,24 +326,43 @@ function renderProducts() {
                     ${inCart && isAvailable ? `
                         ${allowedArray.length > 0 ? `
                             <div style="margin-top:10px; background:var(--bg-muted); padding:10px; border-radius:8px;">
-                                <label style="font-size:0.75rem; font-weight:bold; color:${selectedCount === totalLimit ? 'var(--primary)' : '#e67e22'}; display:block; margin-bottom:6px;">
-                                    ${sideLabel} (${selectedCount} de ${totalLimit}):
-                                </label>
-                                <div style="display:grid; grid-template-columns:1fr; gap:6px;">
-                                    ${allowedArray.map(g => {
-                                        const count = selectedSides.filter(s => s === g).length;
-                                        return `
-                                            <div style="display:flex; align-items:center; justify-content:space-between; font-size:0.8rem; padding: 4px 0; border-bottom: 1px dashed rgba(0,0,0,0.05);">
-                                                <span style="font-weight: 500; color: var(--text);">${g}</span>
-                                                <div style="display:flex; align-items:center; gap:8px; background: white; padding: 2px 6px; border-radius: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-                                                    <button type="button" onclick="adjustSideQty('${p.id}', '${g}', -1)" style="width:20px; height:20px; border-radius:50%; border:1px solid var(--primary); background:none; color:var(--primary); display:flex; align-items:center; justify-content:center; font-size: 0.8rem; font-weight:bold; cursor:pointer; padding:0; line-height:1;">-</button>
-                                                    <span style="font-weight:bold; min-width:14px; text-align:center; font-size: 0.8rem; color: var(--text);">${count}</span>
-                                                    <button type="button" onclick="adjustSideQty('${p.id}', '${g}', 1)" style="width:20px; height:20px; border-radius:50%; border:1px solid var(--primary); background:none; color:var(--primary); display:flex; align-items:center; justify-content:center; font-size: 0.8rem; font-weight:bold; cursor:pointer; padding:0; line-height:1;">+</button>
+                                ${allowedGarnishes.length > 0 ? `
+                                    <label style="font-size:0.75rem; font-weight:bold; color:${selectedGarnishCount === garnishRequired ? 'var(--primary)' : '#e67e22'}; display:block; margin-bottom:6px;">
+                                        🥗 ELEGÍ TU GUARNICIÓN (${selectedGarnishCount} de ${garnishRequired}):
+                                    </label>
+                                    <div style="display:grid; grid-template-columns:1fr; gap:6px; margin-bottom: 10px;">
+                                        ${allowedGarnishes.map(g => {
+                                            const count = selectedSides.filter(s => s === g).length;
+                                            return `
+                                                <div style="display:flex; align-items:center; justify-content:space-between; font-size:0.8rem; padding: 4px 0; border-bottom: 1px dashed rgba(0,0,0,0.05);">
+                                                    <span style="font-weight: 500; color: var(--text);">${g}</span>
+                                                    <div style="display:flex; align-items:center; gap:8px; background: white; padding: 2px 6px; border-radius: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                                                        <button type="button" onclick="adjustSideQty('${p.id}', '${g}', -1)" style="width:20px; height:20px; border-radius:50%; border:1px solid var(--primary); background:none; color:var(--primary); display:flex; align-items:center; justify-content:center; font-size: 0.8rem; font-weight:bold; cursor:pointer; padding:0; line-height:1;">-</button>
+                                                        <span style="font-weight:bold; min-width:14px; text-align:center; font-size: 0.8rem; color: var(--text);">${count}</span>
+                                                        <button type="button" onclick="adjustSideQty('${p.id}', '${g}', 1)" style="width:20px; height:20px; border-radius:50%; border:1px solid var(--primary); background:none; color:var(--primary); display:flex; align-items:center; justify-content:center; font-size: 0.8rem; font-weight:bold; cursor:pointer; padding:0; line-height:1;">+</button>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        `;
-                                    }).join('')}
-                                </div>
+                                            `;
+                                        }).join('')}
+                                    </div>
+                                ` : ''}
+
+                                ${allowedDressings.length > 0 ? `
+                                    <label style="font-size:0.75rem; font-weight:bold; color:var(--primary); display:block; margin-bottom:6px; margin-top: 8px;">
+                                        🍔 ADEREZOS / ADICIONALES:
+                                    </label>
+                                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                                        ${allowedDressings.map(d => {
+                                            const isChecked = selectedSides.includes(d);
+                                            return `
+                                                <label style="display:flex; align-items:center; gap:8px; font-size:0.8rem; cursor:pointer; color:var(--text);">
+                                                    <input type="checkbox" onclick="toggleDressing('${p.id}', '${d}', this.checked)" ${isChecked ? 'checked' : ''} style="width:16px; height:16px; accent-color:var(--brand);">
+                                                    ${d}
+                                                </label>
+                                            `;
+                                        }).join('')}
+                                    </div>
+                                ` : ''}
                             </div>
                         ` : ''}
                         <input type="text" class="note-input" placeholder="✏️ Aclaración (ej: sin picante)" 
@@ -390,8 +412,18 @@ function changeQty(id, delta) {
         const p = products.find(x => String(x.id) === String(id));
         const limitPerUnit = parseInt(p?.sidesLimit) || 1;
         const totalLimit = item.qty * limitPerUnit;
-        if (item.selectedSides && item.selectedSides.length > totalLimit) {
-            item.selectedSides.splice(totalLimit);
+
+        const DRESSINGS_LIST = ['Mostaza', 'Mayonesa', 'Lechuga', 'Tomate', 'Ají'];
+        const isDressing = name => DRESSINGS_LIST.some(d => d.toLowerCase() === name.toLowerCase());
+
+        if (item.selectedSides) {
+            const garnishes = item.selectedSides.filter(x => !isDressing(x));
+            const dressings = item.selectedSides.filter(isDressing);
+            
+            if (garnishes.length > totalLimit) {
+                garnishes.splice(totalLimit);
+            }
+            item.selectedSides = [...garnishes, ...dressings];
         }
     }
     refresh();
@@ -409,15 +441,49 @@ function updateSide(id, val) {
 
 function formatSidesArray(selectedSides) {
     if (!selectedSides || selectedSides.length === 0) return [];
-    const counts = {};
-    selectedSides.forEach(s => {
-        counts[s] = (counts[s] || 0) + 1;
+    const DRESSINGS_LIST = ['Mostaza', 'Mayonesa', 'Lechuga', 'Tomate', 'Ají'];
+    const isDressing = name => DRESSINGS_LIST.some(d => d.toLowerCase() === name.toLowerCase());
+
+    const garnishes = selectedSides.filter(x => !isDressing(x));
+    const dressings = selectedSides.filter(isDressing);
+
+    const result = [];
+    if (garnishes.length > 0) {
+        const counts = {};
+        garnishes.forEach(g => {
+            counts[g] = (counts[g] || 0) + 1;
+        });
+        Object.entries(counts).forEach(([name, qty]) => {
+            result.push(`${qty}x ${name}`);
+        });
+    }
+    dressings.forEach(d => {
+        result.push(d);
     });
-    return Object.entries(counts).map(([name, qty]) => `${qty}x ${name}`);
+    return result;
 }
 
 function formatSides(selectedSides) {
-    return formatSidesArray(selectedSides).join(', ');
+    if (!selectedSides || selectedSides.length === 0) return '';
+    const DRESSINGS_LIST = ['Mostaza', 'Mayonesa', 'Lechuga', 'Tomate', 'Ají'];
+    const isDressing = name => DRESSINGS_LIST.some(d => d.toLowerCase() === name.toLowerCase());
+
+    const garnishes = selectedSides.filter(x => !isDressing(x));
+    const dressings = selectedSides.filter(isDressing);
+
+    const parts = [];
+    if (garnishes.length > 0) {
+        const counts = {};
+        garnishes.forEach(g => {
+            counts[g] = (counts[g] || 0) + 1;
+        });
+        const garnishStr = Object.entries(counts).map(([name, qty]) => `${qty}x ${name}`).join(', ');
+        parts.push(garnishStr);
+    }
+    if (dressings.length > 0) {
+        parts.push(`Aderezos: ${dressings.join(', ')}`);
+    }
+    return parts.join(' | ');
 }
 
 function adjustSideQty(id, side, delta) {
@@ -430,8 +496,12 @@ function adjustSideQty(id, side, delta) {
 
     if (!item.selectedSides) item.selectedSides = [];
 
+    const DRESSINGS_LIST = ['Mostaza', 'Mayonesa', 'Lechuga', 'Tomate', 'Ají'];
+    const isDressing = name => DRESSINGS_LIST.some(d => d.toLowerCase() === name.toLowerCase());
+    const selectedGarnishCount = item.selectedSides.filter(x => !isDressing(x)).length;
+
     if (delta > 0) {
-        if (item.selectedSides.length < totalLimit) {
+        if (selectedGarnishCount < totalLimit) {
             item.selectedSides.push(side);
         } else {
             toast(`Máximo ${totalLimit} guarniciones para ${item.qty} menú(s)`);
@@ -443,9 +513,25 @@ function adjustSideQty(id, side, delta) {
             item.selectedSides.splice(idx, 1);
         }
     }
+}
+
+function toggleDressing(productId, dressingName, isChecked) {
+    const item = cart.find(c => String(c.id) === String(productId));
+    if (!item) return;
+
+    if (!item.selectedSides) item.selectedSides = [];
+
+    if (isChecked) {
+        if (!item.selectedSides.includes(dressingName)) {
+            item.selectedSides.push(dressingName);
+        }
+    } else {
+        item.selectedSides = item.selectedSides.filter(s => s !== dressingName);
+    }
     localStorage.setItem('bocado_cart', JSON.stringify(cart));
     renderProducts();
 }
+window.toggleDressing = toggleDressing;
 
 function refresh() {
     renderProducts();
@@ -471,14 +557,18 @@ function refresh() {
 function openCheckout() {
     // --- NUEVA VALIDACIÓN PREVENTIVA: GUARNICIONES ---
     let missingSides = false;
+    const DRESSINGS_LIST = ['Mostaza', 'Mayonesa', 'Lechuga', 'Tomate', 'Ají'];
+    const isDressing = name => DRESSINGS_LIST.some(d => d.toLowerCase() === name.toLowerCase());
+
     cart.forEach(item => {
         const allowedStr = item.allowedSides || '';
         const allowedArray = allowedStr.split(',').map(x => x.trim()).filter(x => x !== '');
-        if (allowedArray.length > 0) {
+        const allowedGarnishes = allowedArray.filter(x => !isDressing(x));
+        if (allowedGarnishes.length > 0) {
             const limit = parseInt(item.sidesLimit) || 1;
             const required = item.qty * limit;
-            const selected = (item.selectedSides || []).length;
-            if (selected < required) {
+            const selectedGarnishCount = (item.selectedSides || []).filter(x => !isDressing(x)).length;
+            if (selectedGarnishCount < required) {
                 missingSides = true;
             }
         }
@@ -638,14 +728,18 @@ function validateForm() {
 
     // --- NUEVA VALIDACIÓN: GUARNICIONES EN EL CARRITO ---
     let missingSides = false;
+    const DRESSINGS_LIST = ['Mostaza', 'Mayonesa', 'Lechuga', 'Tomate', 'Ají'];
+    const isDressing = name => DRESSINGS_LIST.some(d => d.toLowerCase() === name.toLowerCase());
+
     cart.forEach(item => {
         const allowedStr = item.allowedSides || '';
         const allowedArray = allowedStr.split(',').map(x => x.trim()).filter(x => x !== '');
-        if (allowedArray.length > 0) {
+        const allowedGarnishes = allowedArray.filter(x => !isDressing(x));
+        if (allowedGarnishes.length > 0) {
             const limit = parseInt(item.sidesLimit) || 1;
             const required = item.qty * limit;
-            const selected = (item.selectedSides || []).length;
-            if (selected < required) {
+            const selectedGarnishCount = (item.selectedSides || []).filter(x => !isDressing(x)).length;
+            if (selectedGarnishCount < required) {
                 missingSides = true;
             }
         }
