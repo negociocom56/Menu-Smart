@@ -247,7 +247,7 @@ function renderProducts() {
     }
 
     // Definir orden de categorías
-    const categoryOrder = ['Menú Trabajador', 'Menú Habitual', 'Platos Principales', 'Combos'];
+    const categoryOrder = ['Menú Trabajador', 'Menú Habitual', 'Platos Principales', 'Sándwiches', 'Combos'];
 
     // Agrupar por categoría
     const grouped = {};
@@ -303,6 +303,12 @@ function renderProducts() {
             const selectedSides = inCart ? (inCart.selectedSides || []) : [];
             const selectedCount = selectedSides.length;
 
+            const isSandwich = p.category.toLowerCase().includes('sandwich') || 
+                               p.category.toLowerCase().includes('sándwich') || 
+                               p.name.toLowerCase().includes('sandwich') || 
+                               p.name.toLowerCase().includes('sándwich');
+            const sideLabel = isSandwich ? '🍔 ELEGÍ ADEREZOS / ADICIONALES' : '🥗 ELEGÍ TU GUARNICIÓN';
+
             html += `
             <div class="product-card" id="card-${p.id}" style="${!isAvailable ? 'opacity:0.6;' : ''}">
                 <span class="cat-badge" style="${!isAvailable ? 'background:var(--text-muted);' : ''}">${!isAvailable ? 'AGOTADO' : p.category}</span>
@@ -318,7 +324,7 @@ function renderProducts() {
                         ${allowedArray.length > 0 ? `
                             <div style="margin-top:10px; background:var(--bg-muted); padding:10px; border-radius:8px;">
                                 <label style="font-size:0.75rem; font-weight:bold; color:${selectedCount === totalLimit ? 'var(--primary)' : '#e67e22'}; display:block; margin-bottom:6px;">
-                                    🥗 ELEGÍ TU GUARNICIÓN (${selectedCount} de ${totalLimit}):
+                                    ${sideLabel} (${selectedCount} de ${totalLimit}):
                                 </label>
                                 <div style="display:grid; grid-template-columns:1fr; gap:6px;">
                                     ${allowedArray.map(g => {
@@ -491,6 +497,7 @@ function openCheckout() {
     }
 
     // === CIERRE AUTOMÁTICO (Hora Argentina) ===
+    /*
     const now = new Date();
     const argTimeStr = now.toLocaleString('en-US', { timeZone: 'America/Argentina/Buenos_Aires' });
     const argDate = new Date(argTimeStr); // Parse as local to extract hours/minutes
@@ -502,6 +509,7 @@ function openCheckout() {
         toast('El local se encuentra cerrado. (Horarios: 10:00 a 16:00 y 20:00 a 02:00)');
         return;
     }
+    */
 
     const ov = document.getElementById('checkout-overlay');
     ov.classList.add('open');
@@ -536,12 +544,18 @@ function openCheckout() {
 
     document.getElementById('checkout-total').innerText = total.toLocaleString('es-AR');
 
-    document.getElementById('checkout-items').innerHTML = cart.map((item, index) => `
+    document.getElementById('checkout-items').innerHTML = cart.map((item, index) => {
+        const itemIsSandwich = item.category.toLowerCase().includes('sandwich') || 
+                               item.category.toLowerCase().includes('sándwich') || 
+                               item.name.toLowerCase().includes('sandwich') || 
+                               item.name.toLowerCase().includes('sándwich');
+        const detailsLabel = itemIsSandwich ? '🍔 Detalle' : '🥗 Guarnición';
+        return `
         <div class="order-item">
             <img src="${item.img}" alt="" onerror="this.src='https://placehold.co/50x50/f3eeea/a89e96?text=?'">
             <div class="item-info">
                 <h4>${item.name} × ${item.qty}</h4>
-                ${item.selectedSides && item.selectedSides.length > 0 ? `<div class="item-note">🥗 Guarnición: ${formatSides(item.selectedSides)}</div>` : ''}
+                ${item.selectedSides && item.selectedSides.length > 0 ? `<div class="item-note">${detailsLabel}: ${formatSides(item.selectedSides)}</div>` : ''}
                 ${item.note ? `<div class="item-note">📝 Nota: ${item.note}</div>` : ''}
                 <span>$${item.price.toLocaleString('es-AR')} c/u</span>
             </div>
@@ -550,7 +564,8 @@ function openCheckout() {
                 <button type="button" onclick="removeFromCartIndex(${index})" style="background:none; border:none; color:#e74c3c; margin-top:5px; cursor:pointer; font-size:1.1rem; padding:5px;" title="Eliminar del pedido"><i class="fas fa-trash"></i></button>
             </div>
         </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
 function removeFromCartIndex(index) {
@@ -762,7 +777,12 @@ async function submitOrder(e) {
     let msg = `=== *Pedido Puro Sabor* ===\n\n`;
     cart.forEach(item => {
         msg += `${item.name.toUpperCase()} x${item.qty} - $${(item.price * item.qty).toLocaleString('es-AR')}`;
-        if (item.selectedSides && item.selectedSides.length > 0) msg += `\n   🥗 Guarnición: ${formatSides(item.selectedSides)}`;
+        const itemIsSandwich = item.category.toLowerCase().includes('sandwich') || 
+                               item.category.toLowerCase().includes('sándwich') || 
+                               item.name.toLowerCase().includes('sandwich') || 
+                               item.name.toLowerCase().includes('sándwich');
+        const sidePrefix = itemIsSandwich ? '🍔 Aderezos:' : '🥗 Guarnición:';
+        if (item.selectedSides && item.selectedSides.length > 0) msg += `\n   ${sidePrefix} ${formatSides(item.selectedSides)}`;
         if (item.note) msg += `\n   📝 Nota: ${item.note}`;
         msg += `\n`;
     });
