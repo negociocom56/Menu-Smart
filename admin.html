@@ -204,6 +204,7 @@
                                     <option value="Platos Principales">Platos Principales</option>
                                     <option value="Sándwiches">Sándwiches</option>
                                     <option value="Combos">Combos</option>
+                                    <option value="Bebidas">Bebidas</option>
                                 </select>
                             </div>
                         </div>
@@ -611,7 +612,9 @@
             document.getElementById('product-form').reset();
             document.getElementById('p-stock').value = 100;
             document.getElementById('p-desc').value = '';
-            document.getElementById('p-order').value = 1;
+            // Auto-calcular el siguiente orden: máximo actual + 1
+            const maxOrder = products.reduce((max, p) => Math.max(max, parseInt(p.sortOrder) || 0), 0);
+            document.getElementById('p-order').value = maxOrder + 1;
             document.getElementById('p-sides-limit').value = 1;
             document.querySelectorAll('.side-opt').forEach(el => el.checked = false);
             document.getElementById('p-active').checked = true;

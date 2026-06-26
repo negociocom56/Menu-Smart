@@ -247,7 +247,7 @@ function renderProducts() {
     }
 
     // Definir orden de categorías
-    const categoryOrder = ['Menú Trabajador', 'Menú Habitual', 'Platos Principales', 'Sándwiches', 'Combos'];
+    const categoryOrder = ['Menú Trabajador', 'Menú Habitual', 'Platos Principales', 'Sándwiches', 'Combos', 'Bebidas'];
 
     // Agrupar por categoría
     const grouped = {};
