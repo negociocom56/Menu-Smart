@@ -332,8 +332,8 @@ function renderProducts() {
                                     </label>
                                     <div style="display:grid; grid-template-columns:1fr; gap:6px; margin-bottom: 10px;">
                                         ${allowedGarnishes.map(g => {
-                                            const count = selectedSides.filter(s => s === g).length;
-                                            return `
+                const count = selectedSides.filter(s => s === g).length;
+                return `
                                                 <div style="display:flex; align-items:center; justify-content:space-between; font-size:0.8rem; padding: 4px 0; border-bottom: 1px dashed rgba(0,0,0,0.05);">
                                                     <span style="font-weight: 500; color: var(--text);">${g}</span>
                                                     <div style="display:flex; align-items:center; gap:8px; background: white; padding: 2px 6px; border-radius: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
@@ -343,7 +343,7 @@ function renderProducts() {
                                                     </div>
                                                 </div>
                                             `;
-                                        }).join('')}
+            }).join('')}
                                     </div>
                                 ` : ''}
 
@@ -353,14 +353,14 @@ function renderProducts() {
                                     </label>
                                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
                                         ${allowedDressings.map(d => {
-                                            const isChecked = selectedSides.includes(d);
-                                            return `
+                const isChecked = selectedSides.includes(d);
+                return `
                                                 <label style="display:flex; align-items:center; gap:8px; font-size:0.8rem; cursor:pointer; color:var(--text);">
                                                     <input type="checkbox" onclick="toggleDressing('${p.id}', '${d}', this.checked)" ${isChecked ? 'checked' : ''} style="width:16px; height:16px; accent-color:var(--brand);">
                                                     ${d}
                                                 </label>
                                             `;
-                                        }).join('')}
+            }).join('')}
                                     </div>
                                 ` : ''}
                             </div>
@@ -419,7 +419,7 @@ function changeQty(id, delta) {
         if (item.selectedSides) {
             const garnishes = item.selectedSides.filter(x => !isDressing(x));
             const dressings = item.selectedSides.filter(isDressing);
-            
+
             if (garnishes.length > totalLimit) {
                 garnishes.splice(totalLimit);
             }
@@ -635,10 +635,10 @@ function openCheckout() {
     document.getElementById('checkout-total').innerText = total.toLocaleString('es-AR');
 
     document.getElementById('checkout-items').innerHTML = cart.map((item, index) => {
-        const itemIsSandwich = item.category.toLowerCase().includes('sandwich') || 
-                               item.category.toLowerCase().includes('sándwich') || 
-                               item.name.toLowerCase().includes('sandwich') || 
-                               item.name.toLowerCase().includes('sándwich');
+        const itemIsSandwich = item.category.toLowerCase().includes('sandwich') ||
+            item.category.toLowerCase().includes('sándwich') ||
+            item.name.toLowerCase().includes('sandwich') ||
+            item.name.toLowerCase().includes('sándwich');
         const detailsLabel = itemIsSandwich ? '🍔 Detalle' : '🥗 Guarnición';
         return `
         <div class="order-item">
@@ -871,10 +871,10 @@ async function submitOrder(e) {
     let msg = `=== *Pedido Puro Sabor* ===\n\n`;
     cart.forEach(item => {
         msg += `${item.name.toUpperCase()} x${item.qty} - $${(item.price * item.qty).toLocaleString('es-AR')}`;
-        const itemIsSandwich = item.category.toLowerCase().includes('sandwich') || 
-                               item.category.toLowerCase().includes('sándwich') || 
-                               item.name.toLowerCase().includes('sandwich') || 
-                               item.name.toLowerCase().includes('sándwich');
+        const itemIsSandwich = item.category.toLowerCase().includes('sandwich') ||
+            item.category.toLowerCase().includes('sándwich') ||
+            item.name.toLowerCase().includes('sandwich') ||
+            item.name.toLowerCase().includes('sándwich');
         const sidePrefix = itemIsSandwich ? '🍔 Aderezos:' : '🥗 Guarnición:';
         if (item.selectedSides && item.selectedSides.length > 0) msg += `\n   ${sidePrefix} ${formatSides(item.selectedSides)}`;
         if (item.note) msg += `\n   📝 Nota: ${item.note}`;
@@ -1085,7 +1085,7 @@ function setupEvents() {
         let text = '';
 
         if (method === 'TRANSFERENCIA') {
-            text = 'ℹ️ <strong>Alias: Purosabor2025 </strong> A nombre de: NICOLAS ANTONIO KRUGER | Se procesará el pedido una vez enviado el comprobante de la transferencia realizada vía WhatsApp.';
+            text = 'ℹ️ <strong>Alias: PUROSABOR2026 </strong> A nombre de: YASMIN ESTELA SÁNCHEZ (NARANJA X) | Se procesará el pedido una vez enviado el comprobante de la transferencia realizada vía WhatsApp.';
         } else if (method === 'MERCADO_PAGO') {
             text = 'ℹ️ <strong>El pedido se procesará una vez realizado el pago a través del enlace de pago</strong> y enviado el comprobante por WhatsApp.';
         }
